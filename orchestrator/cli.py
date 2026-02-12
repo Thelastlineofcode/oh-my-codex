@@ -13,7 +13,7 @@ from pathlib import Path
 import argparse
 import subprocess
 
-from .constants import MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP
+from .constants import MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP, SESSION_LIST_LIMIT
 
 
 def detect_mode(prompt: str) -> tuple:
@@ -41,6 +41,12 @@ def run_codex_direct(prompt: str, model: str = None, approval: str = None):
         sys.exit(e.returncode)
     except FileNotFoundError:
         print("❌ Codex CLI not found. Install: npm install -g @openai/codex")
+        sys.exit(127)  # Command not found
+    except PermissionError:
+        print("❌ Permission denied to run Codex CLI")
+        sys.exit(126)  # Cannot execute
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
         sys.exit(1)
 
 
@@ -83,7 +89,7 @@ def list_sessions():
         
         print(f"\n{'ID':<32} {'Status':<10} {'Mode':<10} {'Task'}")
         print("-" * 80)
-        for s in sessions[:15]:
+        for s in sessions[:SESSION_LIST_LIMIT]:
             task_preview = s.task[:30] + "..." if len(s.task) > 30 else s.task
             print(f"{s.id:<32} {s.status.value:<10} {s.mode:<10} {task_preview}")
         

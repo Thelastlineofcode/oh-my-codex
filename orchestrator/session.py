@@ -5,12 +5,16 @@ Handles saving/resuming state for long-running tasks.
 
 import json
 import os
+import tempfile
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, asdict
 from enum import Enum
-import hashlib
+import uuid
+
+from .constants import SESSION_ID_UNIQUE_LENGTH, SESSION_CLEANUP_DAYS
 
 
 class SessionStatus(Enum):
@@ -79,10 +83,10 @@ class SessionManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)
     
     def _generate_id(self, task: str) -> str:
-        """Generate a unique session ID."""
+        """Generate a unique session ID using UUID4."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        task_hash = hashlib.md5(task.encode()).hexdigest()[:8]
-        return f"{timestamp}_{task_hash}"
+        unique_id = uuid.uuid4().hex[:SESSION_ID_UNIQUE_LENGTH]
+        return f"{timestamp}_{unique_id}"
     
     def _get_session_path(self, session_id: str) -> Path:
         """Get the file path for a session."""
@@ -105,11 +109,20 @@ class SessionManager:
         return session
     
     def save(self, session: Session) -> None:
-        """Save a session to disk."""
+        """Save a session to disk with atomic write."""
         session.updated_at = datetime.now().isoformat()
         path = self._get_session_path(session.id)
-        with open(path, "w") as f:
-            json.dump(session.to_dict(), f, indent=2)
+        
+        # Atomic write: write to temp file, then move
+        fd, tmp_path = tempfile.mkstemp(dir=self.base_dir, suffix='.tmp')
+        try:
+            with os.fdopen(fd, 'w') as f:
+                json.dump(session.to_dict(), f, indent=2)
+            shutil.move(tmp_path, path)
+        except Exception:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+            raise
     
     def load(self, session_id: str) -> Optional[Session]:
         """Load a session from disk."""
@@ -170,7 +183,7 @@ class SessionManager:
             return session
         return None
     
-    def cleanup_old(self, days: int = 30) -> int:
+    def cleanup_old(self, days: int = SESSION_CLEANUP_DAYS) -> int:
         """Remove sessions older than specified days."""
         from datetime import timedelta
         cutoff = datetime.now() - timedelta(days=days)

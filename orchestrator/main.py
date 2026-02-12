@@ -4,12 +4,15 @@ Main entry point for orchestration.
 """
 
 import asyncio
+import logging
 import os
 import sys
 from typing import Optional, List
 from datetime import datetime
 
 from .agents import AgentRole, AgentConfig, ModelTier, AGENT_CONFIGS, get_agent_config
+
+logger = logging.getLogger(__name__)
 from .session import SessionManager, Session, TaskRecord, SessionStatus
 from .mcp import MCPManager
 
@@ -36,18 +39,27 @@ class Orchestrator:
     
     def log(self, msg: str, level: str = "info"):
         """Log a message if verbose mode is on."""
+        log_func = getattr(logger, level if level != "success" else "info", logger.info)
+        log_func(msg)
+        
         if self.verbose:
             prefix = {"info": "ℹ️", "success": "✅", "error": "❌", "warn": "⚠️"}.get(level, "")
             print(f"{prefix} {msg}")
+    
+    def _get_cache_key(self, role: AgentRole, mcp_servers: List = None) -> str:
+        """Generate cache key for agent based on role and MCP servers."""
+        servers_hash = hash(tuple(id(s) for s in (mcp_servers or [])))
+        return f"{role.value}_{servers_hash}"
     
     async def _create_agent(self, role: AgentRole, mcp_servers: List = None) -> "Agent":
         """Create an agent with the specified role."""
         if not AGENTS_SDK_AVAILABLE:
             raise ImportError("openai-agents-sdk not installed")
         
-        # Check cache first
-        if role in self._agents:
-            return self._agents[role]
+        # Check cache with proper key (includes MCP servers)
+        cache_key = self._get_cache_key(role, mcp_servers)
+        if cache_key in self._agents:
+            return self._agents[cache_key]
         
         config = get_agent_config(role)
         if not config:
@@ -67,8 +79,8 @@ class Orchestrator:
             handoffs=handoffs if handoffs else None,
         )
         
-        # Cache the created agent
-        self._agents[role] = agent
+        # Cache with proper key
+        self._agents[cache_key] = agent
         
         return agent
     

@@ -7,6 +7,8 @@ from enum import Enum
 from typing import Optional, Tuple
 from dataclasses import dataclass
 
+from .constants import MODEL_FAST, MODEL_STANDARD, MODEL_POWERFUL
+
 
 class TaskComplexity(Enum):
     TRIVIAL = (0, "trivial")    # One-liner, typo fix
@@ -24,9 +26,9 @@ class TaskComplexity(Enum):
 
 
 class ModelTier(Enum):
-    FAST = "gpt-4.1-mini"
-    STANDARD = "gpt-4.1"
-    POWERFUL = "o3"
+    FAST = MODEL_FAST
+    STANDARD = MODEL_STANDARD
+    POWERFUL = MODEL_POWERFUL
 
 
 @dataclass
@@ -82,15 +84,6 @@ COMPLEXITY_PATTERNS = {
     ],
 }
 
-# Mode keywords
-MODE_KEYWORDS = {
-    "autopilot": ["autopilot", "auto", "autonomous"],
-    "ultrawork": ["ulw", "ultrawork", "parallel"],
-    "plan": ["plan", "design", "architect"],
-    "eco": ["eco", "quick", "fast", "simple"],
-}
-
-
 def classify_complexity(task: str) -> Tuple[TaskComplexity, float]:
     """
     Classify task complexity based on patterns.
@@ -119,20 +112,15 @@ def detect_mode(task: str) -> Tuple[Optional[str], str]:
     """
     Detect execution mode from task keywords.
     Returns (mode, cleaned_task).
+    Uses MODE_KEYWORDS from constants.py for consistency.
     """
+    from .constants import MODE_KEYWORDS
+    
     task_lower = task.lower()
     
-    for mode, keywords in MODE_KEYWORDS.items():
-        for keyword in keywords:
-            # Check for keyword at start with colon or space
-            patterns = [
-                rf"^{keyword}:\s*",
-                rf"^{keyword}\s+",
-            ]
-            for pattern in patterns:
-                match = re.match(pattern, task_lower)
-                if match:
-                    return mode, task[match.end():].strip()
+    for keyword, mode in MODE_KEYWORDS.items():
+        if task_lower.startswith(keyword):
+            return mode, task[len(keyword):].strip()
     
     return None, task
 
@@ -194,29 +182,4 @@ def route_task(task: str) -> RoutingDecision:
         reason=", ".join(reasons),
     )
 
-
-# Skill matching
-SKILL_PATTERNS = {
-    "git-master": [r"git\s", r"commit", r"branch", r"merge", r"rebase"],
-    "playwright": [r"e2e", r"playwright", r"browser\s+test", r"automation"],
-    "debug": [r"debug", r"troubleshoot", r"investigate", r"why\s+(is|does)"],
-    "reviewer": [r"review", r"check\s+(the\s+)?code"],
-    "autopilot": [r"build", r"create", r"implement"],
-    "planner": [r"plan", r"design", r"architect"],
-}
-
-
-def suggest_skills(task: str) -> list:
-    """
-    Suggest relevant skills for a task.
-    """
-    task_lower = task.lower()
-    suggestions = []
-    
-    for skill, patterns in SKILL_PATTERNS.items():
-        for pattern in patterns:
-            if re.search(pattern, task_lower):
-                if skill not in suggestions:
-                    suggestions.append(skill)
-    
-    return suggestions
+# Note: suggest_skills() removed in code review cleanup (unused function)

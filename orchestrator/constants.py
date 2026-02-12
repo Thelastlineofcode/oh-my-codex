@@ -5,6 +5,11 @@ Centralized configuration values used across modules.
 
 from typing import Dict, List
 
+# Session management
+SESSION_ID_UNIQUE_LENGTH = 8
+SESSION_LIST_LIMIT = 15
+SESSION_CLEANUP_DAYS = 30
+
 # Keywords that trigger special execution modes
 # Format: keyword -> mode
 MODE_KEYWORDS: Dict[str, str] = {
