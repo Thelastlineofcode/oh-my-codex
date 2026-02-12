@@ -15,199 +15,213 @@
 
 ---
 
-Inspired by [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode), adapted for OpenAI Codex CLI's architecture.
+Inspired by [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode), adapted for OpenAI Codex CLI.
 
 ## Why Oh My Codex?
 
-OpenAI Codex CLI is powerful, but lacks the multi-agent orchestration capabilities that make Claude Code + oh-my-claudecode so effective. This project bridges that gap.
+OpenAI Codex CLI is powerful, but lacks the multi-agent orchestration that makes Claude Code + oh-my-claudecode so effective. This project bridges that gap.
 
-Based on [Vercel's research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) showing that **AGENTS.md outperforms skills** (100% vs 79% pass rate), we use an AGENTS.md-first design where core orchestration logic is always in context.
+Based on [Vercel's research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) showing **AGENTS.md outperforms skills** (100% vs 79%), we use an AGENTS.md-first design.
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| 🧠 **AGENTS.md-First** | Core orchestration logic always in context, not retrieved on-demand |
-| 🚀 **5 Execution Modes** | autopilot, ultrawork, plan, eco, review |
-| 🔧 **8 Native Skills** | Git, Playwright, Debug, and more |
-| 🤖 **Multi-Agent** | PM + specialized agents via Codex MCP + Agents SDK |
-| 📊 **Smart Routing** | Automatic model selection based on task complexity |
-| 💾 **Session Management** | Pause, resume, and track long-running tasks |
-| ⚡ **CLI Wrapper** | `omc` command with keyword detection |
+| 🧠 **AGENTS.md-First** | Core orchestration always in context |
+| 🚀 **8 Execution Modes** | team, autopilot, ultrawork, ralph, pipeline, eco, plan, ultrapilot |
+| 🔧 **31 Native Skills** | Full toolkit matching oh-my-claudecode |
+| 🤖 **32 Specialized Agents** | From PM to Data Scientist |
+| 📊 **Smart Routing** | Automatic model selection |
+| 💾 **Session Management** | Pause, resume, track |
+| 📡 **HUD & Tracing** | Real-time metrics and debugging |
 
 ## Quick Start
 
-### Installation
-
 ```bash
-# Clone the repository
-git clone https://github.com/siltarre/oh-my-codex.git
+# Clone
+git clone https://github.com/junghwaYang/oh-my-codex.git
 cd oh-my-codex
 
-# Run installer
+# Install
 ./install.sh
-```
 
-The installer will:
-- Install skills to `~/.codex/skills/`
-- Copy config to `~/.codex/config.toml`
-- Install `omc` CLI to `~/.local/bin/`
-- Optionally install Python orchestrator
-
-### Basic Usage
-
-```bash
-# Autopilot mode — full autonomous execution
-omc "autopilot: build a REST API for task management"
-
-# Ultrawork mode — parallel multi-file operations
-omc "ulw: rename all 'userId' to 'user_id' across the codebase"
-
-# Plan mode — interview and design (no execution)
-omc "plan: design the payment system architecture"
-
-# Eco mode — token-efficient, quick tasks
-omc "eco: add .env to gitignore"
-
-# Direct pass-through (no keyword = direct Codex)
-omc "fix the bug in auth.py"
+# Use
+omc "autopilot: build a REST API for tasks"
 ```
 
 ## Execution Modes
 
-### Autopilot (`autopilot:`)
+| Mode | Keyword | Description |
+|------|---------|-------------|
+| **Team** | `team:` | Canonical multi-agent pipeline (plan→exec→verify→fix) |
+| **Autopilot** | `autopilot:` | Full autonomous execution |
+| **Ultrawork** | `ulw:` | Parallel multi-file operations |
+| **Ralph** | `ralph:` | Persistent mode (never gives up) |
+| **Ultrapilot** | `ultrapilot:` | Maximum parallelism |
+| **Pipeline** | `pipeline:` | Sequential staged processing |
+| **Eco** | `eco:` | Token-efficient execution |
+| **Plan** | `plan:` | Interview-driven planning |
 
-Full autonomous execution. The agent will:
-1. Analyze the task and create a detailed plan
-2. Execute each step independently
-3. Verify results against acceptance criteria
-4. Iterate until complete (or ask for help)
-
-**Best for:** Feature development, complex implementations, multi-step tasks
-
-```bash
-omc "autopilot: implement user authentication with JWT, including login, logout, and token refresh"
-```
-
-### Ultrawork (`ulw:`)
-
-Parallel execution for large-scale operations. Decomposes work into independent units and processes them concurrently.
-
-**Best for:** Refactoring, bulk updates, codebase-wide changes
+### Examples
 
 ```bash
-omc "ulw: add TypeScript types to all utility functions in src/utils/"
+# Team orchestration (recommended for complex tasks)
+omc "team: build a fullstack app with auth"
+
+# Autopilot for feature development
+omc "autopilot: implement user dashboard"
+
+# Parallel refactoring
+omc "ulw: rename userId to user_id everywhere"
+
+# Persistent debugging
+omc "ralph: fix all TypeScript errors"
+
+# Token-efficient quick fix
+omc "eco: add .env to gitignore"
+
+# Planning without execution
+omc "plan: design the payment system"
 ```
 
-### Plan (`plan:`)
+## Skills (31)
 
-Interview-driven planning without execution. Asks clarifying questions, then generates a comprehensive plan document.
+### Orchestration
+| Skill | Description |
+|-------|-------------|
+| `team` | Multi-agent staged pipeline |
+| `autopilot` | Autonomous execution |
+| `ultrawork` | Parallel execution |
+| `ultrapilot` | Maximum parallelism |
+| `ralph` | Persistent mode |
+| `pipeline` | Sequential processing |
+| `swarm` | Legacy multi-agent (→ team) |
 
-**Best for:** Architecture design, project kickoff, complex requirements
+### Planning & Analysis
+| Skill | Description |
+|-------|-------------|
+| `planner` | Interview-driven planning |
+| `ralplan` | Iterative planning consensus |
+| `analyze` | Code quality analysis |
+| `research` | Deep research |
+| `deepsearch` | Codebase exploration |
 
-```bash
-omc "plan: design a real-time collaborative document editor"
-```
+### Development
+| Skill | Description |
+|-------|-------------|
+| `eco` | Token-efficient mode |
+| `tdd` | Test-driven development |
+| `build-fix` | Fix build errors |
+| `deepinit` | Project initialization |
+| `release` | Version & changelog |
 
-### Eco (`eco:`)
+### Quality & Review
+| Skill | Description |
+|-------|-------------|
+| `reviewer` | Code review |
+| `code-review` | Comprehensive review |
+| `security-review` | Security audit |
+| `ultraqa` | Parallel testing |
 
-Token-efficient mode for simple tasks. Minimal output, direct action, fast completion.
+### Tools & Utilities
+| Skill | Description |
+|-------|-------------|
+| `git-master` | Git workflows |
+| `playwright` | E2E testing |
+| `debug` | Systematic debugging |
+| `mcp-setup` | MCP configuration |
+| `configure-notifications` | Alerts setup |
 
-**Best for:** Quick fixes, simple changes, routine operations
+### System
+| Skill | Description |
+|-------|-------------|
+| `doctor` | Installation diagnostics |
+| `hud` | Real-time metrics |
+| `trace` | Execution tracing |
+| `learner` | Pattern extraction |
+| `note` | Session notes |
 
-```bash
-omc "eco: update the version to 2.0.0 in package.json"
-```
+## Agents (32)
 
-### Ralph (`ralph:`)
+### Primary Orchestration
+- **PM** — Master orchestrator
+- **Coordinator** — Parallel execution management
+- **Executor** — Task execution
+- **Deep Executor** — Complex implementations
 
-Persistent autopilot that never gives up. Keeps trying until the task is truly complete.
+### Planning & Analysis
+- **Planner** — Creates actionable plans
+- **Analyst** — System analysis
+- **Researcher** — Information gathering
+- **Explorer** — Codebase navigation
 
-**Best for:** Stubborn bugs, complex debugging, tasks that need persistence
+### Architecture & Design
+- **Architect** — System design
+- **Designer** — UI/UX design
+- **System Designer** — Distributed systems
 
-```bash
-omc "ralph: fix all TypeScript errors in the project"
-```
+### Development
+- **Frontend** — React, Vue, TypeScript
+- **Backend** — APIs, databases
+- **Fullstack** — End-to-end development
+- **Mobile** — React Native, Flutter
+- **DevOps** — CI/CD, infrastructure
 
-## Skills
+### Quality & Testing
+- **Tester** — Unit/integration tests
+- **QA** — Quality assurance
+- **Security** — Security engineering
+- **Performance** — Performance optimization
 
-Skills are specialized instruction sets that Codex loads on-demand. Oh My Codex includes 8 built-in skills:
+### Review & Critique
+- **Reviewer** — Code review
+- **Critic** — Challenge assumptions
 
-| Skill | Description | Trigger |
-|-------|-------------|---------|
-| **autopilot** | Autonomous feature development | `autopilot:` keyword |
-| **ultrawork** | Parallel multi-file operations | `ulw:` keyword |
-| **planner** | Interview-driven planning | `plan:` keyword |
-| **eco** | Token-efficient execution | `eco:` keyword |
-| **reviewer** | Code review with security/perf checklists | Auto on PR/review |
-| **git-master** | Git workflow (rebase, cherry-pick, etc.) | Git-related tasks |
-| **playwright** | E2E testing and browser automation | Testing tasks |
-| **debug** | Systematic debugging methodology | Debugging tasks |
+### Specialized
+- **Scientist** — Data science
+- **Data** — Data engineering
+- **ML** — Machine learning
+- **Writer** — Documentation
+- **Docs** — API documentation
+- **Vision** — Visual analysis
 
-### Installing External Skills
-
-```bash
-# From skills.sh registry
-npx skills add supabase/supabase-postgres-best-practices
-
-# Skills are installed to ~/.codex/skills/
-```
-
-## Multi-Agent Orchestration
-
-When using complex modes (autopilot, ultrawork), Oh My Codex can spawn specialized agents:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                   Project Manager                        │
-│            (orchestrates, delegates, verifies)           │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-       ┌──────────────┼──────────────┬──────────────┐
-       ▼              ▼              ▼              ▼
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│  Frontend   │ │  Backend    │ │  QA Tester  │ │  Reviewer   │
-│  Developer  │ │  Developer  │ │             │ │             │
-└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
-     React         APIs           Tests          Security
-     TypeScript    Databases      Edge cases     Performance
-     CSS           Auth           Coverage       Quality
-```
-
-**Requirements:** `pip install oh-my-codex[full]`
-
-Each agent has specialized instructions and can use Codex CLI tools via MCP.
+### Support
+- **Debugger** — Bug finding
+- **Refactorer** — Code improvement
+- **Migrator** — Upgrades & migrations
 
 ## Architecture
 
 ```
 oh-my-codex/
-├── AGENTS.md                 # 🧠 Core orchestration brain
-│                             #    Always loaded, contains routing logic
-├── .codex/skills/            # 🔧 Native Codex skills
-│   ├── autopilot/            #    Full autonomous mode
-│   ├── ultrawork/            #    Parallel execution
-│   ├── planner/              #    Interview & planning
-│   ├── eco/                  #    Token-efficient
-│   ├── reviewer/             #    Code review + references/
-│   ├── git-master/           #    Git workflows
-│   ├── playwright/           #    E2E testing
-│   └── debug/                #    Systematic debugging
-│
-├── orchestrator/             # 🤖 Python multi-agent system
-│   ├── main.py               #    Orchestrator entry point
-│   ├── agents/               #    Agent definitions (PM, Frontend, etc.)
-│   │   └── base.py           #    Agent configs and instructions
-│   ├── session.py            #    Session persistence
-│   ├── mcp.py                #    MCP server configurations
-│   ├── router.py             #    Task classification & model routing
-│   ├── utils.py              #    Helper utilities
-│   └── cli.py                #    CLI entry point
-│
-├── bin/omc                   # ⚡ CLI wrapper script
-├── config.toml               # ⚙️ Codex configuration
-├── pyproject.toml            # 📦 Python package definition
-└── install.sh                # 🚀 One-click installer
+├── AGENTS.md                 # Core orchestration brain
+├── .codex/skills/            # 31 native skills
+│   ├── team/
+│   ├── autopilot/
+│   ├── ultrawork/
+│   └── ... (28 more)
+├── orchestrator/             # Python multi-agent
+│   ├── agents/               # 32 agent definitions
+│   ├── session.py            # Session management
+│   ├── mcp.py                # MCP servers
+│   ├── router.py             # Model routing
+│   └── cli.py                # CLI entry
+├── bin/omc                   # CLI wrapper
+├── config.toml               # Configuration
+└── install.sh                # Installer
+```
+
+## CLI Reference
+
+```bash
+omc "task description"          # Auto-detect mode
+omc "autopilot: task"           # Explicit mode
+omc -m ultrawork "task"         # Force mode
+omc --model gpt-4.1 "task"      # Model override
+omc --list                      # List sessions
+omc --resume <id>               # Resume session
+omc --status                    # Check status
+omc -v "task"                   # Verbose
 ```
 
 ## Configuration
@@ -218,151 +232,27 @@ oh-my-codex/
 [model]
 default = "o3"
 
-# Model routing by complexity
 [model.routing]
-simple = "gpt-4.1-mini"    # Trivial tasks, eco mode
-standard = "gpt-4.1"       # Normal tasks
-complex = "o3"             # Architecture, multi-agent
+simple = "gpt-4.1-mini"
+standard = "gpt-4.1"
+complex = "o3"
 
-[skills]
-auto_load = true           # Auto-load matching skills
+[hud]
+enabled = true
+style = "standard"
 
-[compaction]
-enabled = true             # Enable for long sessions
-threshold_tokens = 100000
+[trace]
+enabled = false
+level = "standard"
 ```
-
-### MCP Server Configuration
-
-```toml
-[mcp.github]
-command = "npx"
-args = ["-y", "@anthropic/mcp-server-github"]
-env = { GITHUB_TOKEN = "your-token" }
-
-[mcp.postgres]
-command = "npx"
-args = ["-y", "@anthropic/mcp-server-postgres", "postgresql://..."]
-```
-
-## CLI Reference
-
-```bash
-# Execute with mode detection
-omc "autopilot: build feature X"
-
-# Force specific mode
-omc -m ultrawork "refactor utils"
-
-# Specify model
-omc --model gpt-4.1 "simple task"
-
-# Session management
-omc --list                    # List all sessions
-omc --resume <session-id>     # Resume paused session
-
-# Status and diagnostics
-omc --status                  # Check installation status
-
-# Direct Codex (skip orchestration)
-omc --direct "quick fix"
-
-# Verbose output
-omc -v "autopilot: complex task"
-```
-
-## Design Philosophy
-
-### Why AGENTS.md-First?
-
-Vercel's research found that agents using AGENTS.md with compressed document indices achieved **100% task completion**, while skills-based retrieval only hit **79%** even with explicit instructions.
-
-Key insight: **Information always in context beats on-demand retrieval.**
-
-The agent doesn't have to decide whether to look something up — the information is always there.
-
-### Skill Routing Best Practices
-
-From [OpenAI's guidance](https://developers.openai.com/blog/skills-shell-tips):
-
-1. **Write descriptions like routing logic**, not marketing copy
-2. **Include "Don't use when"** sections to prevent misuse
-3. **Add negative examples** to reduce false triggers
-4. **Put templates inside skills** — they only load when needed
-
-## Session Management
-
-Oh My Codex tracks long-running tasks:
-
-```bash
-# Sessions are auto-created for complex tasks
-omc "autopilot: build authentication system"
-# → Session: 20260213_143022_a1b2c3d4
-
-# List sessions
-omc --list
-# ID                          Status      Mode        Task
-# 20260213_143022_a1b2c3d4    active      autopilot   build authentication...
-
-# Resume if interrupted
-omc --resume 20260213_143022_a1b2c3d4
-```
-
-Sessions are stored in `~/.codex/sessions/` as JSON.
-
-## Troubleshooting
-
-### `omc: command not found`
-
-Add `~/.local/bin` to your PATH:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-Add to your `~/.zshrc` or `~/.bashrc`.
-
-### Multi-agent not working
-
-Install the full package:
-
-```bash
-pip install -e ".[full]"
-```
-
-### Skills not loading
-
-Check installation:
-
-```bash
-omc --status
-ls ~/.codex/skills/
-```
-
-## Roadmap
-
-- [x] Phase 1: Skills + AGENTS.md core
-- [x] Phase 2: Python orchestrator with Agents SDK
-- [x] Phase 3: Model routing & task classification
-- [x] Phase 4: CLI wrapper (`omc`) + session management
-- [ ] Phase 5: Native Codex plugin (waiting for Codex plugin system)
-
-## Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
 
 ## Credits
 
 - [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — Original inspiration
 - [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — Architecture reference
-- [Supabase Agent Skills](https://github.com/supabase/agent-skills) — Skill structure standard
-- [Vercel AGENTS.md Research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) — Design philosophy
+- [Supabase Agent Skills](https://github.com/supabase/agent-skills) — Skill structure
+- [Vercel Research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) — Design philosophy
 
 ## License
 
-MIT © 2026 tarae
+MIT
