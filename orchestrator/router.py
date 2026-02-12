@@ -1,10 +1,10 @@
 """
 Model routing and task classification for Oh My Codex.
 """
+from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Optional, Tuple
 from dataclasses import dataclass
 
 from .constants import MODEL_FAST, MODEL_STANDARD, MODEL_POWERFUL
@@ -17,11 +17,11 @@ class TaskComplexity(Enum):
     COMPLEX = (3, "complex")    # Architecture, multi-component
     CRITICAL = (4, "critical")  # Security, production, high-stakes
     
-    def __init__(self, order: int, label: str):
+    def __init__(self, order: int, label: str) -> None:
         self.order = order
         self.label = label
     
-    def __str__(self):
+    def __str__(self) -> str:
         return self.label
 
 
@@ -84,7 +84,7 @@ COMPLEXITY_PATTERNS = {
     ],
 }
 
-def classify_complexity(task: str) -> Tuple[TaskComplexity, float]:
+def classify_complexity(task: str) -> tuple[TaskComplexity, float]:
     """
     Classify task complexity based on patterns.
     Returns (complexity, confidence).
@@ -108,7 +108,7 @@ def classify_complexity(task: str) -> Tuple[TaskComplexity, float]:
     return best[0], confidence
 
 
-def detect_mode(task: str) -> Tuple[Optional[str], str]:
+def detect_mode(task: str) -> tuple[str | None, str]:
     """
     Detect execution mode from task keywords.
     Returns (mode, cleaned_task).
@@ -125,7 +125,7 @@ def detect_mode(task: str) -> Tuple[Optional[str], str]:
     return None, task
 
 
-def select_model(complexity: TaskComplexity, mode: str = None) -> str:
+def select_model(complexity: TaskComplexity, mode: str | None = None) -> str:
     """
     Select appropriate model based on complexity and mode.
     """

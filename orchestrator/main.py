@@ -2,15 +2,19 @@
 Oh My Codex - Multi-Agent Orchestrator
 Main entry point for orchestration.
 """
+from __future__ import annotations
 
 import asyncio
 import logging
 import os
 import sys
-from typing import Optional, List
+from typing import Any, TYPE_CHECKING
 from datetime import datetime
 
 from .agents import AgentRole, AgentConfig, ModelTier, AGENT_CONFIGS, get_agent_config
+
+if TYPE_CHECKING:
+    from agents import Agent
 
 logger = logging.getLogger(__name__)
 from .session import SessionManager, Session, TaskRecord, SessionStatus
@@ -30,14 +34,14 @@ class Orchestrator:
     Multi-agent orchestrator using Codex MCP + OpenAI Agents SDK.
     """
     
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False) -> None:
         self.verbose = verbose
         self.session_manager = SessionManager()
         self.mcp_manager = MCPManager()
-        self._agents = {}
-        self._codex_mcp = None
+        self._agents: dict[str, Agent] = {}
+        self._codex_mcp: Any = None
     
-    def log(self, msg: str, level: str = "info"):
+    def log(self, msg: str, level: str = "info") -> None:
         """Log a message if verbose mode is on."""
         log_func = getattr(logger, level if level != "success" else "info", logger.info)
         log_func(msg)
@@ -46,12 +50,12 @@ class Orchestrator:
             prefix = {"info": "ℹ️", "success": "✅", "error": "❌", "warn": "⚠️"}.get(level, "")
             print(f"{prefix} {msg}")
     
-    def _get_cache_key(self, role: AgentRole, mcp_servers: List = None) -> str:
+    def _get_cache_key(self, role: AgentRole, mcp_servers: list[Any] | None = None) -> str:
         """Generate cache key for agent based on role and MCP servers."""
         servers_hash = hash(tuple(id(s) for s in (mcp_servers or [])))
         return f"{role.value}_{servers_hash}"
     
-    async def _create_agent(self, role: AgentRole, mcp_servers: List = None) -> "Agent":
+    async def _create_agent(self, role: AgentRole, mcp_servers: list[Any] | None = None) -> Agent:
         """Create an agent with the specified role."""
         if not AGENTS_SDK_AVAILABLE:
             raise ImportError("openai-agents-sdk not installed")
@@ -88,9 +92,9 @@ class Orchestrator:
         self,
         task: str,
         mode: str = "autopilot",
-        agents: List[str] = None,
-        session_id: str = None,
-    ) -> dict:
+        agents: list[str] | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Run an orchestrated task.
         
@@ -166,7 +170,7 @@ class Orchestrator:
                 "session_id": session.id,
             }
     
-    def _get_agents_for_mode(self, mode: str) -> List[AgentRole]:
+    def _get_agents_for_mode(self, mode: str) -> list[AgentRole]:
         """Determine which agents to use based on execution mode."""
         mode_agents = {
             "eco": [AgentRole.PM],
@@ -308,13 +312,13 @@ TASK: {task}
 {context}
 Begin now."""
     
-    def list_sessions(self, status: str = None) -> List[dict]:
+    def list_sessions(self, status: str | None = None) -> list[dict[str, Any]]:
         """List all sessions."""
         status_enum = SessionStatus(status) if status else None
         sessions = self.session_manager.list_sessions(status_enum)
         return [s.to_dict() for s in sessions]
     
-    def get_session(self, session_id: str) -> Optional[dict]:
+    def get_session(self, session_id: str) -> dict[str, Any] | None:
         """Get a specific session."""
         session = self.session_manager.load(session_id)
         return session.to_dict() if session else None

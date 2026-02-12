@@ -2,17 +2,18 @@
 Session management for Oh My Codex.
 Handles saving/resuming state for long-running tasks.
 """
+from __future__ import annotations
 
 import json
 import os
 import tempfile
 import shutil
+import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any
 from dataclasses import dataclass, asdict
 from enum import Enum
-import uuid
 
 from .constants import SESSION_ID_UNIQUE_LENGTH, SESSION_CLEANUP_DAYS
 
@@ -31,10 +32,10 @@ class TaskRecord:
     description: str
     agent: str
     status: str  # pending, in_progress, completed, failed
-    result: Optional[str] = None
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
-    error: Optional[str] = None
+    result: str | None = None
+    started_at: str | None = None
+    completed_at: str | None = None
+    error: str | None = None
 
 
 @dataclass
@@ -46,8 +47,8 @@ class Session:
     created_at: str
     updated_at: str
     mode: str  # autopilot, ultrawork, plan, eco
-    tasks: List[TaskRecord]
-    context: Dict[str, Any]
+    tasks: list[TaskRecord]
+    context: dict[str, Any]
     
     def to_dict(self) -> dict:
         return {
@@ -62,7 +63,7 @@ class Session:
         }
     
     @classmethod
-    def from_dict(cls, data: dict) -> "Session":
+    def from_dict(cls, data: dict[str, Any]) -> Session:
         return cls(
             id=data["id"],
             task=data["task"],
@@ -78,7 +79,7 @@ class Session:
 class SessionManager:
     """Manages session persistence and retrieval."""
     
-    def __init__(self, base_dir: str = None):
+    def __init__(self, base_dir: str | None = None) -> None:
         self.base_dir = Path(base_dir or os.path.expanduser("~/.codex/sessions"))
         self.base_dir.mkdir(parents=True, exist_ok=True)
     
@@ -124,7 +125,7 @@ class SessionManager:
                 os.unlink(tmp_path)
             raise
     
-    def load(self, session_id: str) -> Optional[Session]:
+    def load(self, session_id: str) -> Session | None:
         """Load a session from disk."""
         path = self._get_session_path(session_id)
         if not path.exists():
@@ -132,7 +133,7 @@ class SessionManager:
         with open(path) as f:
             return Session.from_dict(json.load(f))
     
-    def list_sessions(self, status: SessionStatus = None) -> List[Session]:
+    def list_sessions(self, status: SessionStatus | None = None) -> list[Session]:
         """List all sessions, optionally filtered by status."""
         sessions = []
         for path in self.base_dir.glob("*.json"):
@@ -145,7 +146,7 @@ class SessionManager:
                 continue
         return sorted(sessions, key=lambda s: s.created_at, reverse=True)
     
-    def get_active(self) -> List[Session]:
+    def get_active(self) -> list[Session]:
         """Get all active sessions."""
         return self.list_sessions(SessionStatus.ACTIVE)
     
@@ -174,7 +175,7 @@ class SessionManager:
         session.status = SessionStatus.PAUSED
         self.save(session)
     
-    def resume(self, session_id: str) -> Optional[Session]:
+    def resume(self, session_id: str) -> Session | None:
         """Resume a paused or active session."""
         session = self.load(session_id)
         if session and session.status in [SessionStatus.PAUSED, SessionStatus.ACTIVE]:

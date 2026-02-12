@@ -40,9 +40,9 @@ dev = [
 omx = "orchestrator.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/tarae/oh-my-codex"
-Repository = "https://github.com/tarae/oh-my-codex"
-Documentation = "https://github.com/tarae/oh-my-codex#readme"
+Homepage = "https://github.com/junghwaYang/oh-my-codex"
+Repository = "https://github.com/junghwaYang/oh-my-codex"
+Documentation = "https://github.com/junghwaYang/oh-my-codex#readme"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -1,6 +1,7 @@
 """
 CLI entry point for pip-installed oh-my-codex.
 """
+from __future__ import annotations
 
 import sys
 import os
@@ -16,7 +17,7 @@ import subprocess
 from .constants import MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP, SESSION_LIST_LIMIT
 
 
-def detect_mode(prompt: str) -> tuple:
+def detect_mode(prompt: str) -> tuple[str | None, str]:
     """Detect execution mode from prompt keywords."""
     prompt_lower = prompt.lower()
     for keyword, mode in MODE_KEYWORDS.items():
@@ -26,7 +27,7 @@ def detect_mode(prompt: str) -> tuple:
     return None, prompt
 
 
-def run_codex_direct(prompt: str, model: str = None, approval: str = None):
+def run_codex_direct(prompt: str, model: str | None = None, approval: str | None = None) -> None:
     """Run Codex CLI directly."""
     cmd = ["codex"]
     if model:
@@ -50,7 +51,7 @@ def run_codex_direct(prompt: str, model: str = None, approval: str = None):
         sys.exit(1)
 
 
-def run_orchestrator(prompt: str, mode: str, verbose: bool = False, resume: str = None):
+def run_orchestrator(prompt: str, mode: str, verbose: bool = False, resume: str | None = None) -> None:
     """Run the orchestrator."""
     try:
         import asyncio
@@ -75,7 +76,7 @@ def run_orchestrator(prompt: str, mode: str, verbose: bool = False, resume: str 
         run_codex_direct(prompt)
 
 
-def list_sessions():
+def list_sessions() -> None:
     """List sessions."""
     try:
         from .session import SessionManager
@@ -98,7 +99,7 @@ def list_sessions():
         sys.exit(1)
 
 
-def show_status():
+def show_status() -> None:
     """Show status."""
     print("🚀 Oh My Codex Status\n")
     
@@ -131,7 +132,7 @@ def show_status():
     print(f"{'✅' if config_path.exists() else '⚠️'} Config: {config_path}")
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
         description="Oh My Codex - Multi-agent orchestration for Codex CLI",
