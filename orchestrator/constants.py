@@ -112,6 +112,7 @@ REASONING_NONE = "none"
 REASONING_LOW = "low"
 REASONING_MEDIUM = "medium"
 REASONING_HIGH = "high"
+REASONING_XHIGH = "xhigh"  # GPT-5.2-codex only
 DEFAULT_REASONING = REASONING_NONE
 
 # Mode to model mapping
@@ -138,14 +139,14 @@ MODE_REASONING_MAP: Dict[str, str] = {
     "plan": REASONING_MEDIUM,
     "tdd": REASONING_LOW,
     "review": REASONING_HIGH,
-    "autopilot": REASONING_MEDIUM,
-    "ultrawork": REASONING_LOW,
-    "team": REASONING_MEDIUM,
-    "ultrapilot": REASONING_HIGH,
-    "ralph": REASONING_HIGH,
+    "autopilot": REASONING_HIGH,
+    "ultrawork": REASONING_MEDIUM,
+    "team": REASONING_HIGH,
+    "ultrapilot": REASONING_XHIGH,  # Maximum reasoning
+    "ralph": REASONING_XHIGH,       # Never give up = max thinking
     "pipeline": REASONING_LOW,
     "ralplan": REASONING_HIGH,
     "research": REASONING_HIGH,
-    "deepsearch": REASONING_LOW,
-    "debug": REASONING_HIGH,
+    "deepsearch": REASONING_MEDIUM,
+    "debug": REASONING_XHIGH,       # Deep debugging = max thinking
 }

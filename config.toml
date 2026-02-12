@@ -13,17 +13,17 @@ standard = "gpt-5.1-codex"    # Default, balanced
 powerful = "gpt-5.2-codex"    # Complex tasks, autopilot
 max = "gpt-5.1-codex-max"     # Long-running, ralph/ultrapilot
 
-# Reasoning effort: none | low | medium | high
+# Reasoning effort: none | low | medium | high | xhigh (5.2-codex only)
 [model.reasoning]
 default = "none"
 eco = "none"
 plan = "medium"
-autopilot = "medium"
-ultrawork = "low"
-ultrapilot = "high"
-ralph = "high"
+autopilot = "high"
+ultrawork = "medium"
+ultrapilot = "xhigh"    # Maximum reasoning
+ralph = "xhigh"         # Never give up = max thinking
 review = "high"
-debug = "high"
+debug = "xhigh"         # Deep debugging
 
 [skills]
 # Skills are auto-loaded from ~/.codex/skills/ and .codex/skills/
