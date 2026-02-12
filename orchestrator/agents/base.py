@@ -58,10 +58,13 @@ class AgentRole(Enum):
 
 
 class ModelTier(Enum):
-    FAST = "gpt-4.1-mini"      # Simple tasks, eco mode
-    STANDARD = "gpt-4.1"       # Normal tasks
-    POWERFUL = "o3"            # Complex reasoning
-    FLAGSHIP = "o3"            # Critical decisions
+    NANO = "gpt-5-nano"            # Fastest, trivial tasks
+    MINI = "gpt-5-mini"            # Fast, eco mode
+    FAST = "gpt-5-mini"            # Alias for MINI
+    STANDARD = "gpt-5.1-codex"     # Normal tasks (Codex optimized)
+    POWERFUL = "gpt-5.2-codex"     # Complex reasoning
+    FLAGSHIP = "gpt-5.2-codex"     # Critical decisions
+    MAX = "gpt-5.1-codex-max"      # Long-running tasks
 
 
 @dataclass
