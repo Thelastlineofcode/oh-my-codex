@@ -37,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-omc = "orchestrator.cli:main"
+omx = "orchestrator.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/tarae/oh-my-codex"

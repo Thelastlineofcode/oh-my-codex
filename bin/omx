@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-omc - Oh My Codex CLI
+omx - Oh My Codex CLI
 A wrapper around Codex CLI with multi-agent orchestration.
 """
 
@@ -154,11 +154,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  omc "fix the bug in auth.py"           # Direct Codex
-  omc "autopilot: build a REST API"      # Full orchestration
-  omc "ulw: refactor all utils"          # Parallel execution
-  omc "plan: design payment system"      # Planning mode
-  omc "eco: add .env to gitignore"       # Token-efficient
+  omx "fix the bug in auth.py"           # Direct Codex
+  omx "autopilot: build a REST API"      # Full orchestration
+  omx "ulw: refactor all utils"          # Parallel execution
+  omx "plan: design payment system"      # Planning mode
+  omx "eco: add .env to gitignore"       # Token-efficient
 
 Keywords:
   autopilot:  Full autonomous execution

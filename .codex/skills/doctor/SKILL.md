@@ -93,7 +93,7 @@ pip install openai-agents-sdk
 cp ~/.codex/config.toml ~/.codex/config.toml.bak
 
 # Reset to default
-omc --reset-config
+omx --reset-config
 ```
 
 ### Reinstall Skills

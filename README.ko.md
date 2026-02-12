@@ -46,7 +46,7 @@ cd oh-my-codex
 ./install.sh
 
 # 사용
-omc "autopilot: REST API 만들어줘"
+omx "autopilot: REST API 만들어줘"
 ```
 
 ## 실행 모드
@@ -66,22 +66,22 @@ omc "autopilot: REST API 만들어줘"
 
 ```bash
 # Team 오케스트레이션 (복잡한 작업에 추천)
-omc "team: 인증 포함 풀스택 앱 만들어줘"
+omx "team: 인증 포함 풀스택 앱 만들어줘"
 
 # 기능 개발용 Autopilot
-omc "autopilot: 사용자 대시보드 구현해줘"
+omx "autopilot: 사용자 대시보드 구현해줘"
 
 # 병렬 리팩토링
-omc "ulw: userId를 user_id로 전부 변경해줘"
+omx "ulw: userId를 user_id로 전부 변경해줘"
 
 # 지속적 디버깅
-omc "ralph: 모든 TypeScript 에러 고쳐줘"
+omx "ralph: 모든 TypeScript 에러 고쳐줘"
 
 # 토큰 효율적 빠른 수정
-omc "eco: gitignore에 .env 추가해줘"
+omx "eco: gitignore에 .env 추가해줘"
 
 # 실행 없이 계획만
-omc "plan: 결제 시스템 설계하자"
+omx "plan: 결제 시스템 설계하자"
 ```
 
 ## 스킬 (31개)
@@ -193,14 +193,14 @@ omc "plan: 결제 시스템 설계하자"
 ## CLI 레퍼런스
 
 ```bash
-omc "작업 설명"                  # 모드 자동 감지
-omc "autopilot: 작업"           # 명시적 모드
-omc -m ultrawork "작업"         # 모드 강제
-omc --model gpt-4.1 "작업"      # 모델 지정
-omc --list                      # 세션 목록
-omc --resume <id>               # 세션 재개
-omc --status                    # 상태 확인
-omc -v "작업"                   # 상세 출력
+omx "작업 설명"                  # 모드 자동 감지
+omx "autopilot: 작업"           # 명시적 모드
+omx -m ultrawork "작업"         # 모드 강제
+omx --model gpt-4.1 "작업"      # 모델 지정
+omx --list                      # 세션 목록
+omx --resume <id>               # 세션 재개
+omx --status                    # 상태 확인
+omx -v "작업"                   # 상세 출력
 ```
 
 ## 크레딧

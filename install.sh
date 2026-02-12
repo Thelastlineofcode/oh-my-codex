@@ -40,14 +40,14 @@ if [ ! -f "$CODEX_DIR/config.toml" ]; then
     echo -e "${GREEN}⚙️  Installing config.toml...${NC}"
     cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml"
 else
-    echo -e "${YELLOW}⚙️  config.toml exists, skipping (backup: config.toml.omc)${NC}"
-    cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml.omc"
+    echo -e "${YELLOW}⚙️  config.toml exists, skipping (backup: config.toml.omx)${NC}"
+    cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml.omx"
 fi
 
 # Install CLI wrapper
-echo -e "${GREEN}🔧 Installing omc CLI...${NC}"
-cp "$REPO_DIR/bin/omc" "$BIN_DIR/omc"
-chmod +x "$BIN_DIR/omc"
+echo -e "${GREEN}🔧 Installing omx CLI...${NC}"
+cp "$REPO_DIR/bin/omx" "$BIN_DIR/omx"
+chmod +x "$BIN_DIR/omx"
 
 # Check if ~/.local/bin is in PATH
 if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
@@ -94,12 +94,12 @@ echo ""
 echo -e "${GREEN}✅ Oh My Codex installed!${NC}"
 echo ""
 echo "Usage:"
-echo "  omc \"autopilot: build a REST API\"     # Full orchestration"
-echo "  omc \"ulw: refactor all files\"         # Parallel execution"
-echo "  omc \"plan: design the system\"         # Planning mode"
-echo "  omc \"eco: quick fix\"                  # Token-efficient"
-echo "  omc --status                           # Check status"
-echo "  omc --list                             # List sessions"
+echo "  omx \"autopilot: build a REST API\"     # Full orchestration"
+echo "  omx \"ulw: refactor all files\"         # Parallel execution"
+echo "  omx \"plan: design the system\"         # Planning mode"
+echo "  omx \"eco: quick fix\"                  # Token-efficient"
+echo "  omx --status                           # Check status"
+echo "  omx --list                             # List sessions"
 echo ""
 echo "Skills installed to: $SKILLS_DIR"
 echo "Config at: $CODEX_DIR/config.toml"

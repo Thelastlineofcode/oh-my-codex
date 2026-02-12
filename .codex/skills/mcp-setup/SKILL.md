@@ -61,7 +61,7 @@ env = { BRAVE_API_KEY = "xxx" }
 npx -y @anthropic/mcp-server-filesystem /tmp
 
 # Verify configuration
-omc --status
+omx --status
 ```
 
 ## Usage

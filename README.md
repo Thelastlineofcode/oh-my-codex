@@ -46,7 +46,7 @@ cd oh-my-codex
 ./install.sh
 
 # Use
-omc "autopilot: build a REST API for tasks"
+omx "autopilot: build a REST API for tasks"
 ```
 
 ## Execution Modes
@@ -66,22 +66,22 @@ omc "autopilot: build a REST API for tasks"
 
 ```bash
 # Team orchestration (recommended for complex tasks)
-omc "team: build a fullstack app with auth"
+omx "team: build a fullstack app with auth"
 
 # Autopilot for feature development
-omc "autopilot: implement user dashboard"
+omx "autopilot: implement user dashboard"
 
 # Parallel refactoring
-omc "ulw: rename userId to user_id everywhere"
+omx "ulw: rename userId to user_id everywhere"
 
 # Persistent debugging
-omc "ralph: fix all TypeScript errors"
+omx "ralph: fix all TypeScript errors"
 
 # Token-efficient quick fix
-omc "eco: add .env to gitignore"
+omx "eco: add .env to gitignore"
 
 # Planning without execution
-omc "plan: design the payment system"
+omx "plan: design the payment system"
 ```
 
 ## Skills (31)
@@ -206,7 +206,7 @@ oh-my-codex/
 │   ├── mcp.py                # MCP servers
 │   ├── router.py             # Model routing
 │   └── cli.py                # CLI entry
-├── bin/omc                   # CLI wrapper
+├── bin/omx                   # CLI wrapper
 ├── config.toml               # Configuration
 └── install.sh                # Installer
 ```
@@ -214,14 +214,14 @@ oh-my-codex/
 ## CLI Reference
 
 ```bash
-omc "task description"          # Auto-detect mode
-omc "autopilot: task"           # Explicit mode
-omc -m ultrawork "task"         # Force mode
-omc --model gpt-4.1 "task"      # Model override
-omc --list                      # List sessions
-omc --resume <id>               # Resume session
-omc --status                    # Check status
-omc -v "task"                   # Verbose
+omx "task description"          # Auto-detect mode
+omx "autopilot: task"           # Explicit mode
+omx -m ultrawork "task"         # Force mode
+omx --model gpt-4.1 "task"      # Model override
+omx --list                      # List sessions
+omx --resume <id>               # Resume session
+omx --status                    # Check status
+omx -v "task"                   # Verbose
 ```
 
 ## Configuration

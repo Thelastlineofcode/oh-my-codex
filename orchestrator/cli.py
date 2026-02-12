@@ -145,11 +145,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  omc "fix the bug"                      # Direct Codex
-  omc "autopilot: build REST API"        # Full orchestration
-  omc "ulw: refactor utils"              # Parallel execution
-  omc "plan: design system"              # Planning mode
-  omc "eco: quick fix"                   # Token-efficient
+  omx "fix the bug"                      # Direct Codex
+  omx "autopilot: build REST API"        # Full orchestration
+  omx "ulw: refactor utils"              # Parallel execution
+  omx "plan: design system"              # Planning mode
+  omx "eco: quick fix"                   # Token-efficient
 
 Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
 """,

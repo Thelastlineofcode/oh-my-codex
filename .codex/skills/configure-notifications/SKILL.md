@@ -25,7 +25,7 @@ Set up notifications for session events.
 
 ### 3. Configure
 ```bash
-omc config-notify telegram \
+omx config-notify telegram \
   --token "123456:ABC-DEF" \
   --chat-id "-1001234567890"
 ```
@@ -39,7 +39,7 @@ omc config-notify telegram \
 
 ### 2. Configure
 ```bash
-omc config-notify discord \
+omx config-notify discord \
   --webhook "https://discord.com/api/webhooks/..."
 ```
 
