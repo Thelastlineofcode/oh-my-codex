@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 from .session import SessionManager, Session, TaskRecord, SessionStatus
 from .mcp import MCPManager
 
-# Check for Agents SDK
+# Check for Agents SDK (pip install openai-agents)
 try:
-    from agents import Agent, Runner
+    from agents import Agent, Runner, function_tool
     from agents.mcp import MCPServerStdio
     AGENTS_SDK_AVAILABLE = True
 except ImportError:
