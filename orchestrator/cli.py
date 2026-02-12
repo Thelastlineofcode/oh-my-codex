@@ -13,20 +13,7 @@ from pathlib import Path
 import argparse
 import subprocess
 
-# Keywords that trigger special modes
-MODE_KEYWORDS = {
-    "autopilot:": "autopilot",
-    "autopilot ": "autopilot",
-    "ulw:": "ultrawork",
-    "ulw ": "ultrawork",
-    "ultrawork:": "ultrawork",
-    "plan:": "plan",
-    "plan ": "plan",
-    "eco:": "eco",
-    "eco ": "eco",
-    "ralph:": "autopilot",
-    "ralph ": "autopilot",
-}
+from .constants import MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP
 
 
 def detect_mode(prompt: str) -> tuple:
@@ -187,10 +174,14 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
         return
     
     if args.direct or mode is None:
-        model = args.model or ("gpt-4.1-mini" if mode == "eco" else None)
+        model = args.model or MODE_MODEL_MAP.get(mode)
         run_codex_direct(prompt, model=model)
-    else:
+    elif mode in ORCHESTRATED_MODES:
         run_orchestrator(clean_prompt, mode, args.verbose)
+    else:
+        # Direct modes with model routing
+        model = args.model or MODE_MODEL_MAP.get(mode)
+        run_codex_direct(clean_prompt, model=model)
 
 
 if __name__ == "__main__":

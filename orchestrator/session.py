@@ -162,12 +162,13 @@ class SessionManager:
         self.save(session)
     
     def resume(self, session_id: str) -> Optional[Session]:
-        """Resume a paused session."""
+        """Resume a paused or active session."""
         session = self.load(session_id)
-        if session and session.status == SessionStatus.PAUSED:
+        if session and session.status in [SessionStatus.PAUSED, SessionStatus.ACTIVE]:
             session.status = SessionStatus.ACTIVE
             self.save(session)
-        return session
+            return session
+        return None
     
     def cleanup_old(self, days: int = 30) -> int:
         """Remove sessions older than specified days."""

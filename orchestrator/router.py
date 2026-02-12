@@ -9,11 +9,18 @@ from dataclasses import dataclass
 
 
 class TaskComplexity(Enum):
-    TRIVIAL = "trivial"    # One-liner, typo fix
-    SIMPLE = "simple"      # Single file, clear task
-    MEDIUM = "medium"      # Multi-file, some complexity
-    COMPLEX = "complex"    # Architecture, multi-component
-    CRITICAL = "critical"  # Security, production, high-stakes
+    TRIVIAL = (0, "trivial")    # One-liner, typo fix
+    SIMPLE = (1, "simple")      # Single file, clear task
+    MEDIUM = (2, "medium")      # Multi-file, some complexity
+    COMPLEX = (3, "complex")    # Architecture, multi-component
+    CRITICAL = (4, "critical")  # Security, production, high-stakes
+    
+    def __init__(self, order: int, label: str):
+        self.order = order
+        self.label = label
+    
+    def __str__(self):
+        return self.label
 
 
 class ModelTier(Enum):
@@ -102,8 +109,8 @@ def classify_complexity(task: str) -> Tuple[TaskComplexity, float]:
         # Default to SIMPLE with low confidence
         return TaskComplexity.SIMPLE, 0.3
     
-    # Return highest complexity with most matches
-    best = max(matches.items(), key=lambda x: (x[0].value, x[1]))
+    # Return highest complexity with most matches (using order for proper sorting)
+    best = max(matches.items(), key=lambda x: (x[0].order, x[1]))
     confidence = min(0.9, 0.5 + (best[1] * 0.2))
     return best[0], confidence
 
@@ -176,7 +183,7 @@ def route_task(task: str) -> RoutingDecision:
     reasons = []
     if mode:
         reasons.append(f"mode={mode}")
-    reasons.append(f"complexity={complexity.value}")
+    reasons.append(f"complexity={complexity.label}")
     reasons.append(f"model={model}")
     
     return RoutingDecision(

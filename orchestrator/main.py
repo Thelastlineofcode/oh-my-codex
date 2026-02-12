@@ -45,18 +45,19 @@ class Orchestrator:
         if not AGENTS_SDK_AVAILABLE:
             raise ImportError("openai-agents-sdk not installed")
         
+        # Check cache first
+        if role in self._agents:
+            return self._agents[role]
+        
         config = get_agent_config(role)
         if not config:
             raise ValueError(f"Unknown agent role: {role}")
         
-        # Get handoff agents
+        # Get handoff agents (recursive, but cached)
         handoffs = []
         for handoff_role in config.handoff_to:
-            if handoff_role not in self._agents:
-                self._agents[handoff_role] = await self._create_agent(
-                    handoff_role, mcp_servers
-                )
-            handoffs.append(self._agents[handoff_role])
+            handoff_agent = await self._create_agent(handoff_role, mcp_servers)
+            handoffs.append(handoff_agent)
         
         agent = Agent(
             name=config.name,
@@ -65,6 +66,9 @@ class Orchestrator:
             mcp_servers=mcp_servers or [],
             handoffs=handoffs if handoffs else None,
         )
+        
+        # Cache the created agent
+        self._agents[role] = agent
         
         return agent
     
@@ -152,20 +156,30 @@ class Orchestrator:
     
     def _get_agents_for_mode(self, mode: str) -> List[AgentRole]:
         """Determine which agents to use based on execution mode."""
-        if mode == "eco":
-            return [AgentRole.PM]  # Minimal, PM handles directly
-        elif mode == "plan":
-            return [AgentRole.PM, AgentRole.ARCHITECT]
-        elif mode == "ultrawork":
-            return [AgentRole.PM, AgentRole.FRONTEND, AgentRole.BACKEND, AgentRole.TESTER]
-        else:  # autopilot (default)
-            return [
-                AgentRole.PM,
-                AgentRole.FRONTEND,
-                AgentRole.BACKEND,
-                AgentRole.TESTER,
-                AgentRole.REVIEWER,
-            ]
+        mode_agents = {
+            "eco": [AgentRole.PM],
+            "plan": [AgentRole.PM, AgentRole.PLANNER, AgentRole.ARCHITECT],
+            "ralplan": [AgentRole.PM, AgentRole.PLANNER, AgentRole.CRITIC],
+            "ultrawork": [AgentRole.PM, AgentRole.COORDINATOR, AgentRole.FRONTEND, AgentRole.BACKEND, AgentRole.TESTER],
+            "ultrapilot": [AgentRole.PM, AgentRole.COORDINATOR, AgentRole.FRONTEND, AgentRole.BACKEND, AgentRole.TESTER, AgentRole.REVIEWER],
+            "team": [AgentRole.PM, AgentRole.PLANNER, AgentRole.EXECUTOR, AgentRole.TESTER, AgentRole.REVIEWER],
+            "ralph": [AgentRole.PM, AgentRole.EXECUTOR, AgentRole.TESTER, AgentRole.DEBUGGER],
+            "pipeline": [AgentRole.PM, AgentRole.PLANNER, AgentRole.EXECUTOR],
+            "tdd": [AgentRole.PM, AgentRole.TESTER, AgentRole.EXECUTOR],
+            "review": [AgentRole.PM, AgentRole.REVIEWER, AgentRole.SECURITY],
+            "research": [AgentRole.PM, AgentRole.RESEARCHER, AgentRole.ANALYST],
+            "deepsearch": [AgentRole.PM, AgentRole.EXPLORER, AgentRole.ANALYST],
+            "debug": [AgentRole.PM, AgentRole.DEBUGGER, AgentRole.ANALYST],
+        }
+        
+        # Default: autopilot
+        return mode_agents.get(mode, [
+            AgentRole.PM,
+            AgentRole.FRONTEND,
+            AgentRole.BACKEND,
+            AgentRole.TESTER,
+            AgentRole.REVIEWER,
+        ])
     
     def _prepare_prompt(self, task: str, mode: str, session: Session) -> str:
         """Prepare the prompt based on mode and session context."""
@@ -183,6 +197,42 @@ Do not ask for confirmation - execute autonomously.""",
 3. Aggregate and verify results
 Focus on parallelization and speed.""",
             
+            "ultrapilot": """ULTRAPILOT MODE - Maximum parallel agents.
+1. Analyze and decompose task
+2. Spawn maximum parallel agents
+3. Execute all tracks simultaneously
+4. Merge and verify results
+Maximum speed through parallelization.""",
+            
+            "team": """TEAM MODE - Staged pipeline orchestration.
+Pipeline: plan → prd → exec → verify → fix (loop)
+1. Create structured plan
+2. Generate PRD with acceptance criteria
+3. Execute with specialized agents
+4. Verify against criteria
+5. Fix any issues (loop until passing)
+Coordinated team execution.""",
+            
+            "ralph": """RALPH MODE - Persistent execution (never give up).
+1. Attempt the task
+2. Verify completion
+3. If not complete, fix and retry
+4. Loop until FULLY verified complete
+NEVER give up. NEVER declare partial success.""",
+            
+            "pipeline": """PIPELINE MODE - Sequential staged processing.
+1. Define pipeline stages
+2. Execute each stage in order
+3. Pass output to next stage
+4. Verify final output
+Strict sequential execution.""",
+            
+            "ralplan": """RALPLAN MODE - Iterative planning with consensus.
+Round 1: Create initial plan
+Round 2: Critique and challenge
+Round 3: Refine based on feedback
+Continue until consensus reached.""",
+            
             "plan": """PLAN MODE - Interview and planning only.
 1. Ask clarifying questions (max 3)
 2. Create detailed plan document
@@ -194,6 +244,39 @@ Do NOT execute - planning only.""",
 - Execute directly
 - Brief confirmation only
 Optimize for speed and token efficiency.""",
+            
+            "tdd": """TDD MODE - Test-Driven Development.
+1. Write failing test first
+2. Implement minimal code to pass
+3. Refactor
+4. Repeat
+Red → Green → Refactor cycle.""",
+            
+            "review": """REVIEW MODE - Comprehensive code review.
+Check: Security, Performance, Correctness, Maintainability
+Output: Issues by severity with specific fixes
+Verdict: Approve / Request Changes.""",
+            
+            "research": """RESEARCH MODE - Deep research and analysis.
+1. Define research question
+2. Gather sources
+3. Analyze and compare
+4. Synthesize findings
+5. Provide recommendation.""",
+            
+            "deepsearch": """DEEPSEARCH MODE - Codebase exploration.
+1. Map structure
+2. Find relevant files
+3. Trace code paths
+4. Document findings.""",
+            
+            "debug": """DEBUG MODE - Systematic debugging.
+1. Reproduce the issue
+2. Isolate the cause
+3. Form hypothesis
+4. Test and verify
+5. Apply fix
+6. Confirm resolution.""",
         }
         
         instruction = mode_instructions.get(mode, mode_instructions["autopilot"])
