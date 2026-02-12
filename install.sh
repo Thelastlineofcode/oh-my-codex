@@ -11,6 +11,7 @@ BIN_DIR="$HOME/.local/bin"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
@@ -24,6 +25,35 @@ mkdir -p "$CODEX_DIR/sessions"
 mkdir -p "$CODEX_DIR/errors"
 mkdir -p "$BIN_DIR"
 
+# ============================================
+# Billing Provider Setup
+# ============================================
+echo -e "${BLUE}💳 Billing Setup${NC}"
+echo ""
+echo "How do you want to use Codex?"
+echo ""
+echo "  1) ${GREEN}Codex Pro${NC} - \$200/month subscription (unlimited usage)"
+echo "  2) ${YELLOW}OpenAI API${NC} - Pay per token (usage-based)"
+echo ""
+read -p "Select [1/2]: " -n 1 -r BILLING_CHOICE
+echo ""
+
+case $BILLING_CHOICE in
+    1)
+        PROVIDER="codex"
+        echo -e "   → Using ${GREEN}Codex Pro${NC} subscription"
+        ;;
+    2)
+        PROVIDER="openai"
+        echo -e "   → Using ${YELLOW}OpenAI API${NC} billing"
+        ;;
+    *)
+        PROVIDER="codex"
+        echo -e "   → Defaulting to ${GREEN}Codex Pro${NC}"
+        ;;
+esac
+echo ""
+
 # Install skills
 echo -e "${GREEN}📦 Installing skills...${NC}"
 for skill in "$REPO_DIR/.codex/skills"/*; do
@@ -35,14 +65,30 @@ for skill in "$REPO_DIR/.codex/skills"/*; do
     fi
 done
 
-# Install config
-if [ ! -f "$CODEX_DIR/config.toml" ]; then
-    echo -e "${GREEN}⚙️  Installing config.toml...${NC}"
-    cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml"
-else
-    echo -e "${YELLOW}⚙️  config.toml exists, skipping (backup: config.toml.omx)${NC}"
-    cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml.omx"
+# Install config with provider setting
+echo -e "${GREEN}⚙️  Installing config.toml...${NC}"
+if [ -f "$CODEX_DIR/config.toml" ]; then
+    echo -e "${YELLOW}   Backing up existing config to config.toml.bak${NC}"
+    cp "$CODEX_DIR/config.toml" "$CODEX_DIR/config.toml.bak"
 fi
+
+# Copy and inject provider setting
+cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml"
+
+# Add billing section if not exists
+if ! grep -q "\[billing\]" "$CODEX_DIR/config.toml"; then
+    cat >> "$CODEX_DIR/config.toml" << EOF
+
+[billing]
+# Provider: "codex" (subscription) or "openai" (API)
+provider = "$PROVIDER"
+EOF
+else
+    # Update existing provider setting
+    sed -i.tmp "s/^provider = .*/provider = \"$PROVIDER\"/" "$CODEX_DIR/config.toml"
+    rm -f "$CODEX_DIR/config.toml.tmp"
+fi
+echo "   → Provider set to: $PROVIDER"
 
 # Install CLI wrapper
 echo -e "${GREEN}🔧 Installing omx CLI...${NC}"

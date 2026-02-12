@@ -1,18 +1,95 @@
 """
 Utility functions for Oh My Codex.
 """
+from __future__ import annotations
 
 import os
 import json
 import hashlib
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any
+
+from .constants import DEFAULT_PROVIDER
 
 
 def get_codex_dir() -> Path:
     """Get the Codex configuration directory."""
     return Path.home() / ".codex"
+
+
+def get_config() -> dict[str, Any]:
+    """Load config.toml and return as dict."""
+    config_path = get_codex_dir() / "config.toml"
+    if not config_path.exists():
+        return {}
+    
+    try:
+        import tomllib
+    except ImportError:
+        # Python < 3.11 fallback
+        try:
+            import tomli as tomllib
+        except ImportError:
+            # No TOML parser available, return empty
+            return {}
+    
+    try:
+        with open(config_path, "rb") as f:
+            return tomllib.load(f)
+    except Exception:
+        return {}
+
+
+def get_billing_provider() -> str:
+    """Get the configured billing provider."""
+    config = get_config()
+    billing = config.get("billing", {})
+    return billing.get("provider", DEFAULT_PROVIDER)
+
+
+def set_billing_provider(provider: str) -> bool:
+    """Set the billing provider in config.toml."""
+    config_path = get_codex_dir() / "config.toml"
+    
+    if not config_path.exists():
+        # Create minimal config
+        content = f'''[billing]
+provider = "{provider}"
+'''
+        config_path.write_text(content)
+        print(f"✅ Created config and set provider to: {provider}")
+        return True
+    
+    # Read existing config
+    content = config_path.read_text()
+    
+    # Check if billing section exists
+    if "[billing]" in content:
+        # Update existing provider line
+        import re
+        new_content = re.sub(
+            r'(provider\s*=\s*)["\']?\w+["\']?',
+            f'provider = "{provider}"',
+            content
+        )
+        if new_content == content:
+            # provider line not found, add it after [billing]
+            new_content = content.replace(
+                "[billing]",
+                f'[billing]\nprovider = "{provider}"'
+            )
+    else:
+        # Add billing section
+        new_content = content + f'''
+[billing]
+provider = "{provider}"
+'''
+    
+    config_path.write_text(new_content)
+    provider_display = "Codex Pro (subscription)" if provider == "codex" else "OpenAI API (pay-per-use)"
+    print(f"✅ Billing provider set to: {provider_display}")
+    return True
 
 
 def get_skills_dir() -> Path:
@@ -30,7 +107,7 @@ def get_plans_dir() -> Path:
     return get_codex_dir() / "plans"
 
 
-def ensure_dirs():
+def ensure_dirs() -> None:
     """Ensure all required directories exist."""
     dirs = [
         get_codex_dir(),
@@ -43,7 +120,7 @@ def ensure_dirs():
         d.mkdir(parents=True, exist_ok=True)
 
 
-def list_installed_skills() -> List[str]:
+def list_installed_skills() -> list[str]:
     """List installed skill names."""
     skills_dir = get_skills_dir()
     if not skills_dir.exists():
@@ -54,7 +131,7 @@ def list_installed_skills() -> List[str]:
     ]
 
 
-def get_skill_info(skill_name: str) -> Optional[Dict[str, Any]]:
+def get_skill_info(skill_name: str) -> dict[str, Any] | None:
     """Get information about a skill."""
     skill_dir = get_skills_dir() / skill_name
     skill_file = skill_dir / "SKILL.md"
@@ -93,7 +170,7 @@ def generate_task_id(task: str) -> str:
     return f"{timestamp}_{task_hash}"
 
 
-def save_plan(task: str, plan: str, name: Optional[str] = None) -> Path:
+def save_plan(task: str, plan: str, name: str | None = None) -> Path:
     """Save a plan document."""
     plans_dir = get_plans_dir()
     plans_dir.mkdir(parents=True, exist_ok=True)
@@ -118,7 +195,7 @@ Generated: {datetime.now().isoformat()}
     return plan_path
 
 
-def load_plan(plan_id: str) -> Optional[str]:
+def load_plan(plan_id: str) -> str | None:
     """Load a plan document."""
     plans_dir = get_plans_dir()
     
@@ -131,7 +208,7 @@ def load_plan(plan_id: str) -> Optional[str]:
     return None
 
 
-def list_plans() -> List[Dict[str, Any]]:
+def list_plans() -> list[dict[str, Any]]:
     """List all saved plans."""
     plans_dir = get_plans_dir()
     if not plans_dir.exists():
@@ -157,7 +234,7 @@ def list_plans() -> List[Dict[str, Any]]:
     return sorted(plans, key=lambda x: x["modified"], reverse=True)
 
 
-def log_error(error: str, context: Dict[str, Any] = None):
+def log_error(error: str, context: dict[str, Any] | None = None) -> Path:
     """Log an error for debugging."""
     errors_dir = get_codex_dir() / "errors"
     errors_dir.mkdir(parents=True, exist_ok=True)
@@ -193,7 +270,7 @@ def format_duration(seconds: float) -> str:
         return f"{hours:.1f}h"
 
 
-def parse_agents_md(path: Path = None) -> Dict[str, Any]:
+def parse_agents_md(path: Path | None = None) -> dict[str, Any]:
     """Parse AGENTS.md for configuration."""
     if path is None:
         # Look in current directory first, then home

@@ -10,6 +10,11 @@ SESSION_ID_UNIQUE_LENGTH = 8
 SESSION_LIST_LIMIT = 15
 SESSION_CLEANUP_DAYS = 30
 
+# Billing providers
+PROVIDER_CODEX = "codex"      # Subscription model ($200/month)
+PROVIDER_OPENAI = "openai"    # API billing (pay per token)
+DEFAULT_PROVIDER = PROVIDER_CODEX
+
 # Keywords that trigger special execution modes
 # Format: keyword -> mode
 MODE_KEYWORDS: Dict[str, str] = {

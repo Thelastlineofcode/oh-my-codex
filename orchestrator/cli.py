@@ -15,6 +15,7 @@ import argparse
 import subprocess
 
 from .constants import MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP, SESSION_LIST_LIMIT
+from .utils import get_billing_provider, set_billing_provider
 
 
 def detect_mode(prompt: str) -> tuple[str | None, str]:
@@ -27,9 +28,14 @@ def detect_mode(prompt: str) -> tuple[str | None, str]:
     return None, prompt
 
 
-def run_codex_direct(prompt: str, model: str | None = None, approval: str | None = None) -> None:
+def run_codex_direct(prompt: str, model: str | None = None, approval: str | None = None, provider: str | None = None) -> None:
     """Run Codex CLI directly."""
     cmd = ["codex"]
+    
+    # Add provider from config or parameter
+    effective_provider = provider or get_billing_provider()
+    cmd.extend(["--provider", effective_provider])
+    
     if model:
         cmd.extend(["--model", model])
     if approval:
@@ -103,6 +109,11 @@ def show_status() -> None:
     """Show status."""
     print("🚀 Oh My Codex Status\n")
     
+    # Billing provider
+    provider = get_billing_provider()
+    provider_display = "Codex Pro (subscription)" if provider == "codex" else "OpenAI API (pay-per-use)"
+    print(f"💳 Billing: {provider_display}")
+    
     # Codex CLI
     try:
         result = subprocess.run(["codex", "--version"], capture_output=True, text=True)
@@ -152,13 +163,19 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
     parser.add_argument("prompt", nargs="*", help="Task prompt")
     parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"])
     parser.add_argument("--model", help="Model override")
+    parser.add_argument("--provider", choices=["codex", "openai"], help="Billing provider override")
     parser.add_argument("-r", "--resume", help="Resume session")
     parser.add_argument("-l", "--list", action="store_true", help="List sessions")
     parser.add_argument("-s", "--status", action="store_true", help="Show status")
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("--direct", action="store_true", help="Skip orchestration")
+    parser.add_argument("--set-provider", choices=["codex", "openai"], help="Change default billing provider")
     
     args = parser.parse_args()
+    
+    if args.set_provider:
+        set_billing_provider(args.set_provider)
+        return
     
     if args.status:
         show_status()
@@ -182,13 +199,13 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
     
     if args.direct or mode is None:
         model = args.model or MODE_MODEL_MAP.get(mode)
-        run_codex_direct(prompt, model=model)
+        run_codex_direct(prompt, model=model, provider=args.provider)
     elif mode in ORCHESTRATED_MODES:
         run_orchestrator(clean_prompt, mode, args.verbose)
     else:
         # Direct modes with model routing
         model = args.model or MODE_MODEL_MAP.get(mode)
-        run_codex_direct(clean_prompt, model=model)
+        run_codex_direct(clean_prompt, model=model, provider=args.provider)
 
 
 if __name__ == "__main__":
