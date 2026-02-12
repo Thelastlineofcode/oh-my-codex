@@ -271,3 +271,37 @@ tests/
 ---
 
 **결론**: 전반적으로 잘 설계된 프로젝트. 모든 개선사항 반영 완료. ✅ **프로덕션 레벨 도달.**
+
+---
+
+## 📊 2차 리뷰 (2026-02-13 SDK 통합 후)
+
+### 추가된 컴포넌트
+
+| 파일 | 설명 |
+|------|------|
+| `tools.py` | 9개 function_tool (shell, file ops, git) |
+| `main.py` | 병렬 실행, handoffs, reasoning 지원 |
+
+### 아키텍처 개선
+
+```
+omx "autopilot: task"
+    ↓
+[Orchestrator]
+    ├── Mode Detection → Model/Reasoning 선택
+    ├── Agent Creation → PM + Specialists
+    ├── Tool Injection → Role 기반 권한
+    └── Execution
+        ├── Sequential (default)
+        └── Parallel (ultrawork) → asyncio.gather
+```
+
+### 테스트 현황
+- **72개 테스트, 100% 통과**
+- tools: 14, router: 22, session: 18, cli: 9, constants: 12
+
+### 남은 개선 여지
+- [ ] E2E 테스트 (실제 API 호출)
+- [ ] 에러 복구 로직 강화
+- [ ] 메트릭/트레이싱 추가
