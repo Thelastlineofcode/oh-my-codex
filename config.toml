@@ -1,0 +1,52 @@
+# Oh My Codex - Codex CLI Configuration
+# Copy this to ~/.codex/config.toml
+
+[model]
+default = "o3"
+
+# Model routing by task complexity
+[model.routing]
+simple = "gpt-4.1-mini"  # eco mode
+standard = "o3"           # default
+complex = "o3"            # autopilot/ultrawork
+
+[skills]
+# Skills are auto-loaded from ~/.codex/skills/ and .codex/skills/
+auto_load = true
+
+[compaction]
+# Enable for long-running sessions
+enabled = true
+threshold_tokens = 100000
+
+[mcp]
+# MCP servers for tool integration
+# Uncomment and configure as needed
+
+# [mcp.filesystem]
+# command = "npx"
+# args = ["-y", "@anthropic/mcp-server-filesystem", "/path/to/allowed/dir"]
+
+# [mcp.github]
+# command = "npx"
+# args = ["-y", "@anthropic/mcp-server-github"]
+# env = { GITHUB_TOKEN = "your-token" }
+
+# [mcp.postgres]
+# command = "npx"
+# args = ["-y", "@anthropic/mcp-server-postgres", "postgresql://..."]
+
+[profiles]
+# Profile-specific settings
+
+[profiles.autopilot]
+model = "o3"
+approval_mode = "auto-edit"
+
+[profiles.eco]
+model = "gpt-4.1-mini"
+approval_mode = "auto-edit"
+
+[profiles.safe]
+model = "o3"
+approval_mode = "suggest"

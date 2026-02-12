@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+"""
+omc - Oh My Codex CLI
+A wrapper around Codex CLI with multi-agent orchestration.
+"""
+
+import sys
+import os
+import argparse
+import subprocess
+import re
+from pathlib import Path
+
+# Add orchestrator to path
+SCRIPT_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+# Keywords that trigger special modes
+MODE_KEYWORDS = {
+    "autopilot:": "autopilot",
+    "autopilot ": "autopilot",
+    "ulw:": "ultrawork",
+    "ulw ": "ultrawork",
+    "ultrawork:": "ultrawork",
+    "plan:": "plan",
+    "plan ": "plan",
+    "eco:": "eco",
+    "eco ": "eco",
+    "ralph:": "autopilot",  # ralph = persistent autopilot
+    "ralph ": "autopilot",
+}
+
+
+def detect_mode(prompt: str) -> tuple:
+    """Detect execution mode from prompt keywords."""
+    prompt_lower = prompt.lower()
+    for keyword, mode in MODE_KEYWORDS.items():
+        if prompt_lower.startswith(keyword):
+            # Remove keyword from prompt
+            clean_prompt = prompt[len(keyword):].strip()
+            return mode, clean_prompt
+    return None, prompt
+
+
+def run_codex_direct(prompt: str, model: str = None, approval: str = None):
+    """Run Codex CLI directly for simple tasks."""
+    cmd = ["codex"]
+    
+    if model:
+        cmd.extend(["--model", model])
+    
+    if approval:
+        cmd.extend(["--approval-mode", approval])
+    
+    cmd.append(prompt)
+    
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        sys.exit(e.returncode)
+    except FileNotFoundError:
+        print("❌ Codex CLI not found. Install with: npm install -g @openai/codex")
+        sys.exit(1)
+
+
+def run_orchestrator(prompt: str, mode: str, verbose: bool = False, resume: str = None):
+    """Run the full orchestrator for complex tasks."""
+    try:
+        import asyncio
+        from orchestrator import run_orchestration
+        
+        result = asyncio.run(run_orchestration(
+            prompt,
+            mode=mode,
+            verbose=verbose,
+            session_id=resume,
+        ))
+        
+        if result["success"]:
+            print(f"\n✅ Complete! Session: {result.get('session_id')}")
+        else:
+            print(f"\n❌ Error: {result.get('error')}")
+            sys.exit(1)
+            
+    except ImportError as e:
+        print(f"⚠️ Orchestrator unavailable: {e}")
+        print("Falling back to direct Codex...")
+        run_codex_direct(prompt)
+
+
+def list_sessions():
+    """List orchestration sessions."""
+    try:
+        from orchestrator import SessionManager
+        
+        manager = SessionManager()
+        sessions = manager.list_sessions()
+        
+        if not sessions:
+            print("No sessions found.")
+            return
+        
+        print(f"\n{'ID':<32} {'Status':<10} {'Mode':<10} {'Task'}")
+        print("-" * 80)
+        for s in sessions[:15]:
+            task_preview = s.task[:30] + "..." if len(s.task) > 30 else s.task
+            print(f"{s.id:<32} {s.status.value:<10} {s.mode:<10} {task_preview}")
+        
+    except ImportError:
+        print("❌ Orchestrator not available")
+        sys.exit(1)
+
+
+def show_status():
+    """Show Oh My Codex status."""
+    print("🚀 Oh My Codex Status\n")
+    
+    # Check Codex CLI
+    try:
+        result = subprocess.run(["codex", "--version"], capture_output=True, text=True)
+        print(f"✅ Codex CLI: {result.stdout.strip()}")
+    except FileNotFoundError:
+        print("❌ Codex CLI: Not installed")
+    
+    # Check Agents SDK
+    try:
+        import agents
+        print(f"✅ OpenAI Agents SDK: Available")
+    except ImportError:
+        print("⚠️ OpenAI Agents SDK: Not installed (orchestrator limited)")
+    
+    # Check skills
+    skills_dir = Path.home() / ".codex" / "skills"
+    if skills_dir.exists():
+        skills = list(skills_dir.iterdir())
+        print(f"✅ Skills installed: {len(skills)}")
+        for skill in skills:
+            if skill.is_dir():
+                print(f"   - {skill.name}")
+    else:
+        print("⚠️ No skills installed")
+    
+    # Check config
+    config_path = Path.home() / ".codex" / "config.toml"
+    if config_path.exists():
+        print(f"✅ Config: {config_path}")
+    else:
+        print("⚠️ Config: Not found")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Oh My Codex - Multi-agent orchestration for Codex CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  omc "fix the bug in auth.py"           # Direct Codex
+  omc "autopilot: build a REST API"      # Full orchestration
+  omc "ulw: refactor all utils"          # Parallel execution
+  omc "plan: design payment system"      # Planning mode
+  omc "eco: add .env to gitignore"       # Token-efficient
+
+Keywords:
+  autopilot:  Full autonomous execution
+  ulw:        Parallel multi-file work (ultrawork)
+  plan:       Interview-driven planning
+  eco:        Token-efficient mode
+  ralph:      Persistent autopilot (never give up)
+""",
+    )
+    
+    parser.add_argument("prompt", nargs="*", help="Task prompt")
+    parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"],
+                       help="Force execution mode")
+    parser.add_argument("--model", help="Model to use")
+    parser.add_argument("-r", "--resume", help="Resume session ID")
+    parser.add_argument("-l", "--list", action="store_true", help="List sessions")
+    parser.add_argument("-s", "--status", action="store_true", help="Show status")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("--direct", action="store_true", help="Force direct Codex (no orchestration)")
+    
+    args = parser.parse_args()
+    
+    # Handle special commands
+    if args.status:
+        show_status()
+        return
+    
+    if args.list:
+        list_sessions()
+        return
+    
+    if not args.prompt and not args.resume:
+        parser.print_help()
+        return
+    
+    # Join prompt parts
+    prompt = " ".join(args.prompt) if args.prompt else ""
+    
+    # Detect mode from keywords
+    detected_mode, clean_prompt = detect_mode(prompt)
+    mode = args.mode or detected_mode
+    
+    # If resuming, always use orchestrator
+    if args.resume:
+        run_orchestrator(clean_prompt, mode or "autopilot", args.verbose, args.resume)
+        return
+    
+    # Decide: direct Codex or orchestrator
+    if args.direct or mode is None:
+        # No special mode detected, use direct Codex
+        model = args.model
+        if mode == "eco":
+            model = model or "gpt-4.1-mini"
+        run_codex_direct(prompt, model=model)
+    else:
+        # Special mode detected, use orchestrator
+        run_orchestrator(clean_prompt, mode, args.verbose)
+
+
+if __name__ == "__main__":
+    main()
