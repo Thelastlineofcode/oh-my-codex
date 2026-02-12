@@ -7,7 +7,7 @@ import re
 from enum import Enum
 from dataclasses import dataclass
 
-from .constants import MODEL_FAST, MODEL_STANDARD, MODEL_POWERFUL
+from .constants import MODEL_MINI, MODEL_STANDARD, MODEL_POWERFUL, MODEL_NANO
 
 
 class TaskComplexity(Enum):
@@ -26,7 +26,9 @@ class TaskComplexity(Enum):
 
 
 class ModelTier(Enum):
-    FAST = MODEL_FAST
+    NANO = MODEL_NANO
+    MINI = MODEL_MINI
+    FAST = MODEL_MINI  # alias
     STANDARD = MODEL_STANDARD
     POWERFUL = MODEL_POWERFUL
 
@@ -131,12 +133,12 @@ def select_model(complexity: TaskComplexity, mode: str | None = None) -> str:
     """
     # Mode overrides
     if mode == "eco":
-        return ModelTier.FAST.value
+        return ModelTier.MINI.value
     
     # Complexity-based selection
     complexity_to_model = {
-        TaskComplexity.TRIVIAL: ModelTier.FAST,
-        TaskComplexity.SIMPLE: ModelTier.FAST,
+        TaskComplexity.TRIVIAL: ModelTier.NANO,
+        TaskComplexity.SIMPLE: ModelTier.MINI,
         TaskComplexity.MEDIUM: ModelTier.STANDARD,
         TaskComplexity.COMPLEX: ModelTier.POWERFUL,
         TaskComplexity.CRITICAL: ModelTier.POWERFUL,

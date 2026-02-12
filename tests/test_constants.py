@@ -6,7 +6,7 @@ from orchestrator.constants import (
     ORCHESTRATED_MODES,
     DIRECT_MODES,
     MODE_MODEL_MAP,
-    MODEL_FAST,
+    MODEL_MINI,
     MODEL_STANDARD,
     MODEL_POWERFUL,
     SESSION_ID_UNIQUE_LENGTH,
@@ -65,9 +65,9 @@ class TestModelMapping:
         for mode in all_modes:
             assert mode in MODE_MODEL_MAP, f"Mode {mode} has no model mapping"
     
-    def test_eco_uses_fast(self):
-        """Eco mode uses fast model."""
-        assert MODE_MODEL_MAP["eco"] == MODEL_FAST
+    def test_eco_uses_mini(self):
+        """Eco mode uses mini model."""
+        assert MODE_MODEL_MAP["eco"] == MODEL_MINI
     
     def test_autopilot_uses_powerful(self):
         """Autopilot uses powerful model."""

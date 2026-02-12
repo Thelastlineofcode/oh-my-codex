@@ -14,8 +14,11 @@ from pathlib import Path
 import argparse
 import subprocess
 
-from .constants import MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP, SESSION_LIST_LIMIT
-from .utils import get_billing_provider, set_billing_provider
+from .constants import (
+    MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP, MODE_REASONING_MAP,
+    SESSION_LIST_LIMIT, REASONING_NONE
+)
+from .utils import get_billing_provider, set_billing_provider, get_config
 
 
 def detect_mode(prompt: str) -> tuple[str | None, str]:
@@ -28,7 +31,13 @@ def detect_mode(prompt: str) -> tuple[str | None, str]:
     return None, prompt
 
 
-def run_codex_direct(prompt: str, model: str | None = None, approval: str | None = None, provider: str | None = None) -> None:
+def run_codex_direct(
+    prompt: str,
+    model: str | None = None,
+    approval: str | None = None,
+    provider: str | None = None,
+    reasoning: str | None = None,
+) -> None:
     """Run Codex CLI directly."""
     cmd = ["codex"]
     
@@ -40,6 +49,11 @@ def run_codex_direct(prompt: str, model: str | None = None, approval: str | None
         cmd.extend(["--model", model])
     if approval:
         cmd.extend(["--approval-mode", approval])
+    
+    # Add reasoning effort if specified and not "none"
+    if reasoning and reasoning != REASONING_NONE:
+        cmd.extend(["-c", f'reasoning.effort="{reasoning}"'])
+    
     cmd.append(prompt)
     
     try:
@@ -114,6 +128,15 @@ def show_status() -> None:
     provider_display = "Codex Pro (subscription)" if provider == "codex" else "OpenAI API (pay-per-use)"
     print(f"💳 Billing: {provider_display}")
     
+    # Default model
+    config = get_config()
+    model = config.get("model", {}).get("default", "gpt-5.1-codex")
+    print(f"🤖 Default Model: {model}")
+    
+    # Default reasoning
+    reasoning = config.get("model", {}).get("reasoning", {}).get("default", "none")
+    print(f"🧠 Reasoning: {reasoning}")
+    
     # Codex CLI
     try:
         result = subprocess.run(["codex", "--version"], capture_output=True, text=True)
@@ -164,6 +187,8 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
     parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"])
     parser.add_argument("--model", help="Model override")
     parser.add_argument("--provider", choices=["codex", "openai"], help="Billing provider override")
+    parser.add_argument("--reasoning", choices=["none", "low", "medium", "high"], 
+                       help="Reasoning effort (for GPT-5.1+)")
     parser.add_argument("-r", "--resume", help="Resume session")
     parser.add_argument("-l", "--list", action="store_true", help="List sessions")
     parser.add_argument("-s", "--status", action="store_true", help="Show status")
@@ -199,13 +224,15 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
     
     if args.direct or mode is None:
         model = args.model or MODE_MODEL_MAP.get(mode)
-        run_codex_direct(prompt, model=model, provider=args.provider)
+        reasoning = args.reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
+        run_codex_direct(prompt, model=model, provider=args.provider, reasoning=reasoning)
     elif mode in ORCHESTRATED_MODES:
         run_orchestrator(clean_prompt, mode, args.verbose)
     else:
         # Direct modes with model routing
         model = args.model or MODE_MODEL_MAP.get(mode)
-        run_codex_direct(clean_prompt, model=model, provider=args.provider)
+        reasoning = args.reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
+        run_codex_direct(clean_prompt, model=model, provider=args.provider, reasoning=reasoning)
 
 
 if __name__ == "__main__":

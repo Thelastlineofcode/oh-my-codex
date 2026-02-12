@@ -106,10 +106,10 @@ class TestDetectMode:
 class TestSelectModel:
     """Tests for select_model function."""
     
-    def test_trivial_uses_fast(self):
-        """Trivial tasks use fast model."""
+    def test_trivial_uses_nano(self):
+        """Trivial tasks use nano model."""
         model = select_model(TaskComplexity.TRIVIAL)
-        assert model == ModelTier.FAST.value
+        assert model == ModelTier.NANO.value
     
     def test_complex_uses_powerful(self):
         """Complex tasks use powerful model."""
@@ -117,9 +117,9 @@ class TestSelectModel:
         assert model == ModelTier.POWERFUL.value
     
     def test_eco_mode_overrides(self):
-        """Eco mode forces fast model regardless of complexity."""
+        """Eco mode forces mini model regardless of complexity."""
         model = select_model(TaskComplexity.CRITICAL, mode="eco")
-        assert model == ModelTier.FAST.value
+        assert model == ModelTier.MINI.value
 
 
 class TestRouteTask:
