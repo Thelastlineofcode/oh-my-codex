@@ -5,21 +5,24 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "oh-my-codex"
 version = "0.1.0"
-description = "Multi-agent orchestration for OpenAI Codex CLI"
+description = "Multi-agent orchestration for OpenAI Codex CLI - Turn Codex into a team of AI agents"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "tarae", email = "tarae@example.com"}
+    {name = "junghwaYang", email = "junghwa@example.com"}
 ]
-keywords = ["codex", "openai", "agents", "orchestration", "cli"]
+keywords = ["codex", "openai", "agents", "orchestration", "cli", "ai", "multi-agent", "gpt"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 requires-python = ">=3.10"
 dependencies = [
@@ -38,6 +41,7 @@ dev = [
 
 [project.scripts]
 omx = "orchestrator.cli:main"
+omx-setup = "orchestrator.setup:main"
 
 [project.urls]
 Homepage = "https://github.com/junghwaYang/oh-my-codex"
@@ -47,6 +51,9 @@ Documentation = "https://github.com/junghwaYang/oh-my-codex#readme"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["orchestrator*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.toml"]
 
 [tool.black]
 line-length = 100
