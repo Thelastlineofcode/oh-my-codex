@@ -13,12 +13,52 @@ if __name__ == "__main__":
 from pathlib import Path
 import argparse
 import subprocess
+import getpass
 
 from .constants import (
     MODE_KEYWORDS, ORCHESTRATED_MODES, MODE_MODEL_MAP, MODE_REASONING_MAP,
     SESSION_LIST_LIMIT, REASONING_NONE
 )
 from .utils import get_billing_provider, set_billing_provider, get_config
+
+# Version
+__version__ = "0.1.0"
+
+# Colors
+class C:
+    ORANGE = "\033[38;5;208m"
+    GREEN = "\033[32m"
+    CYAN = "\033[36m"
+    YELLOW = "\033[33m"
+    DIM = "\033[2m"
+    RESET = "\033[0m"
+
+# ASCII Art Banner
+BANNER = f"""{C.ORANGE}
+    ╔═══╗ ╔╗  ╔╗ ╔═╗╔═╗
+    ║╔═╗║ ║║  ║║ ║║╚╝║║
+    ║║ ║║ ║╚╗╔╝║ ║╔╗╔╗║
+    ║║ ║║ ║╔╗╔╗║ ║║║║║║
+    ║╚═╝║ ║║╚╝║║ ║║║║║║
+    ╚═══╝ ╚╝  ╚╝ ╚╝╚╝╚╝{C.RESET}
+"""
+
+
+def print_banner(model: str | None = None, provider: str | None = None) -> None:
+    """Print the startup banner."""
+    config = get_config()
+    effective_model = model or config.get("model", {}).get("default", "gpt-5.1-codex")
+    effective_provider = provider or get_billing_provider()
+    user = getpass.getuser()
+    cwd = Path.cwd()
+    
+    provider_label = "Codex Pro" if effective_provider == "codex" else "OpenAI API"
+    
+    print(BANNER)
+    print(f"    {C.DIM}Oh My Codex{C.RESET} v{__version__}")
+    print(f"    {C.CYAN}{effective_model}{C.RESET} · {C.GREEN}{provider_label}{C.RESET}")
+    print(f"    {C.DIM}/{user}{C.RESET}")
+    print()
 
 
 def detect_mode(prompt: str) -> tuple[str | None, str]:
@@ -121,49 +161,40 @@ def list_sessions() -> None:
 
 def show_status() -> None:
     """Show status."""
-    print("🚀 Oh My Codex Status\n")
+    print_banner()
     
-    # Billing provider
-    provider = get_billing_provider()
-    provider_display = "Codex Pro (subscription)" if provider == "codex" else "OpenAI API (pay-per-use)"
-    print(f"💳 Billing: {provider_display}")
-    
-    # Default model
     config = get_config()
-    model = config.get("model", {}).get("default", "gpt-5.1-codex")
-    print(f"🤖 Default Model: {model}")
     
-    # Default reasoning
+    # Reasoning
     reasoning = config.get("model", {}).get("reasoning", {}).get("default", "none")
-    print(f"🧠 Reasoning: {reasoning}")
+    print(f"    🧠 Reasoning: {reasoning}")
     
     # Codex CLI
     try:
         result = subprocess.run(["codex", "--version"], capture_output=True, text=True)
-        print(f"✅ Codex CLI: {result.stdout.strip()}")
+        print(f"    ✅ Codex CLI: {result.stdout.strip()}")
     except FileNotFoundError:
-        print("❌ Codex CLI: Not installed")
+        print("    ❌ Codex CLI: Not installed")
     
     # Agents SDK
     try:
         import agents
-        print(f"✅ OpenAI Agents SDK: Available")
+        print(f"    ✅ Agents SDK: Available")
     except ImportError:
-        print("⚠️ OpenAI Agents SDK: Not installed (pip install oh-my-codex[full])")
+        print("    ⚠️ Agents SDK: pip install oh-my-codex[full]")
     
     # Skills
     skills_dir = Path.home() / ".codex" / "skills"
     if skills_dir.exists():
         skills = [s for s in skills_dir.iterdir() if s.is_dir()]
-        print(f"✅ Skills: {len(skills)} installed")
-        for skill in skills:
-            print(f"   - {skill.name}")
+        print(f"    📦 Skills: {len(skills)} installed")
     else:
-        print("⚠️ Skills: None installed")
+        print("    ⚠️ Skills: None installed")
     
     # Config
     config_path = Path.home() / ".codex" / "config.toml"
-    print(f"{'✅' if config_path.exists() else '⚠️'} Config: {config_path}")
+    print(f"    {'✅' if config_path.exists() else '⚠️'} Config: {config_path}")
+    print()
 
 
 def main() -> None:
