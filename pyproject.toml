@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oh-my-codex"
-version = "0.1.4"
+version = "0.1.5"
 description = "Multi-agent orchestration for OpenAI Codex CLI - Turn Codex into a team of AI agents"
 readme = "README.md"
 license = {text = "MIT"}

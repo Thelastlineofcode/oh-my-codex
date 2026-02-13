@@ -22,7 +22,7 @@ from .constants import (
 from .utils import get_billing_provider, set_billing_provider, get_config
 
 # Version
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 # Colors
 class C:
@@ -35,12 +35,12 @@ class C:
 
 # ASCII Art Banner
 BANNER = f"""{C.ORANGE}
-    ╔═══╗ ╔╗  ╔╗ ╔═╗╔═╗
-    ║╔═╗║ ║║  ║║ ║║╚╝║║
-    ║║ ║║ ║╚╗╔╝║ ║╔╗╔╗║
-    ║║ ║║ ║╔╗╔╗║ ║║║║║║
-    ║╚═╝║ ║║╚╝║║ ║║║║║║
-    ╚═══╝ ╚╝  ╚╝ ╚╝╚╝╚╝{C.RESET}
+     ██████╗ ███╗   ███╗██╗  ██╗
+    ██╔═══██╗████╗ ████║╚██╗██╔╝
+    ██║   ██║██╔████╔██║ ╚███╔╝
+    ██║   ██║██║╚██╔╝██║ ██╔██╗
+    ╚██████╔╝██║ ╚═╝ ██║██╔╝ ██╗
+     ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝{C.RESET}
 """
 
 
