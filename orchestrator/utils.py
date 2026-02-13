@@ -19,24 +19,20 @@ def get_codex_dir() -> Path:
 
 
 def get_config() -> dict[str, Any]:
-    """Load config.toml and return as dict."""
-    config_path = get_codex_dir() / "config.toml"
+    """Load omx-config.yaml and return as dict."""
+    config_path = get_codex_dir() / "omx-config.yaml"
     if not config_path.exists():
         return {}
     
     try:
-        import tomllib
+        import yaml
     except ImportError:
-        # Python < 3.11 fallback
-        try:
-            import tomli as tomllib
-        except ImportError:
-            # No TOML parser available, return empty
-            return {}
+        # PyYAML not installed, return empty
+        return {}
     
     try:
-        with open(config_path, "rb") as f:
-            return tomllib.load(f)
+        with open(config_path) as f:
+            return yaml.safe_load(f) or {}
     except Exception:
         return {}
 
@@ -49,44 +45,32 @@ def get_billing_provider() -> str:
 
 
 def set_billing_provider(provider: str) -> bool:
-    """Set the billing provider in config.toml."""
-    config_path = get_codex_dir() / "config.toml"
+    """Set the billing provider in omx-config.yaml."""
+    config_path = get_codex_dir() / "omx-config.yaml"
     
-    if not config_path.exists():
-        # Create minimal config
-        content = f'''[billing]
-provider = "{provider}"
-'''
-        config_path.write_text(content)
-        print(f"✅ Created config and set provider to: {provider}")
-        return True
+    try:
+        import yaml
+    except ImportError:
+        print("❌ PyYAML not installed")
+        return False
     
-    # Read existing config
-    content = config_path.read_text()
-    
-    # Check if billing section exists
-    if "[billing]" in content:
-        # Update existing provider line
-        import re
-        new_content = re.sub(
-            r'(provider\s*=\s*)["\']?\w+["\']?',
-            f'provider = "{provider}"',
-            content
-        )
-        if new_content == content:
-            # provider line not found, add it after [billing]
-            new_content = content.replace(
-                "[billing]",
-                f'[billing]\nprovider = "{provider}"'
-            )
+    # Load existing config or create new
+    if config_path.exists():
+        with open(config_path) as f:
+            config = yaml.safe_load(f) or {}
     else:
-        # Add billing section
-        new_content = content + f'''
-[billing]
-provider = "{provider}"
-'''
+        config = {}
     
-    config_path.write_text(new_content)
+    # Update billing section
+    if "billing" not in config:
+        config["billing"] = {}
+    config["billing"]["provider"] = provider
+    
+    # Write back
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(config_path, "w") as f:
+        yaml.dump(config, f, default_flow_style=False)
+    
     provider_display = "Codex Pro (subscription)" if provider == "codex" else "OpenAI API (pay-per-use)"
     print(f"✅ Billing provider set to: {provider_display}")
     return True

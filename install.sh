@@ -124,30 +124,86 @@ for skill in "$REPO_DIR/.codex/skills"/*; do
     fi
 done
 
-# Install config with provider setting
-echo -e "${GREEN}⚙️  Installing config.toml...${NC}"
+# Install Codex CLI config (YAML format)
+echo -e "${GREEN}⚙️  Installing config.yaml...${NC}"
+if [ -f "$CODEX_DIR/config.yaml" ]; then
+    echo -e "${YELLOW}   Backing up existing config to config.yaml.bak${NC}"
+    cp "$CODEX_DIR/config.yaml" "$CODEX_DIR/config.yaml.bak"
+fi
+
+# Remove old TOML config if exists (causes errors)
 if [ -f "$CODEX_DIR/config.toml" ]; then
-    echo -e "${YELLOW}   Backing up existing config to config.toml.bak${NC}"
-    cp "$CODEX_DIR/config.toml" "$CODEX_DIR/config.toml.bak"
+    echo -e "${YELLOW}   Removing old config.toml (incompatible format)${NC}"
+    mv "$CODEX_DIR/config.toml" "$CODEX_DIR/config.toml.old"
 fi
 
-# Copy and inject provider setting
-cp "$REPO_DIR/config.toml" "$CODEX_DIR/config.toml"
+# Create Codex CLI config
+cat > "$CODEX_DIR/config.yaml" << EOF
+# Oh My Codex - Codex CLI Configuration
+model: o4-mini
+approvalMode: suggest
+fullAutoErrorMode: ask-user
+notify: true
 
-# Add billing section if not exists
-if ! grep -q "\[billing\]" "$CODEX_DIR/config.toml"; then
-    cat >> "$CODEX_DIR/config.toml" << EOF
-
-[billing]
-# Provider: "codex" (subscription) or "openai" (API)
-provider = "$PROVIDER"
+history:
+  maxSize: 1000
+  saveHistory: true
+  sensitivePatterns: []
 EOF
-else
-    # Update existing provider setting
-    sed -i.tmp "s/^provider = .*/provider = \"$PROVIDER\"/" "$CODEX_DIR/config.toml"
-    rm -f "$CODEX_DIR/config.toml.tmp"
+
+# Create OMX orchestrator config (separate file)
+cat > "$CODEX_DIR/omx-config.yaml" << EOF
+# Oh My Codex Orchestrator Settings
+billing:
+  provider: $PROVIDER
+
+model:
+  default: gpt-5.1-codex
+  routing:
+    nano: gpt-5-nano
+    mini: gpt-5-mini
+    standard: gpt-5.1-codex
+    powerful: gpt-5.2-codex
+    max: gpt-5.1-codex-max
+  reasoning:
+    default: none
+    eco: none
+    plan: medium
+    autopilot: high
+    ultrawork: medium
+    ultrapilot: xhigh
+    ralph: xhigh
+    review: high
+    debug: xhigh
+EOF
+echo "   → Codex CLI config: config.yaml"
+echo "   → OMX orchestrator config: omx-config.yaml"
+echo "   → Billing provider: $PROVIDER"
+
+# Codex Pro login prompt
+if [ "$PROVIDER" = "codex" ]; then
+    echo ""
+    echo -e "${BLUE}🔐 Codex Pro Authentication${NC}"
+    echo -e "${YELLOW}(Use ↑↓ arrows to select, Enter to confirm)${NC}"
+    
+    select_option "Login now" "Skip (login later with 'codex login')"
+    LOGIN_CHOICE=$?
+    
+    if [ $LOGIN_CHOICE -eq 0 ]; then
+        echo ""
+        if command -v codex &> /dev/null; then
+            echo -e "   Opening browser for Codex login..."
+            codex login || echo -e "${YELLOW}   ⚠️ Login skipped - run 'codex login' later${NC}"
+        else
+            echo -e "${YELLOW}   ⚠️ Codex CLI not installed yet${NC}"
+            echo -e "   Run: ${GREEN}npm i -g @openai/codex${NC}"
+            echo -e "   Then: ${GREEN}codex login${NC}"
+        fi
+    else
+        echo ""
+        echo -e "   → Run ${GREEN}codex login${NC} when ready"
+    fi
 fi
-echo "   → Provider set to: $PROVIDER"
 
 # Install CLI wrapper
 echo -e "${GREEN}🔧 Installing omx CLI...${NC}"

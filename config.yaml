@@ -1,0 +1,14 @@
+# Oh My Codex - Codex CLI Configuration
+# This file is for the Codex CLI itself
+# Copy to ~/.codex/config.yaml
+
+model: o4-mini
+approvalMode: suggest
+fullAutoErrorMode: ask-user
+notify: true
+
+# History settings
+history:
+  maxSize: 1000
+  saveHistory: true
+  sensitivePatterns: []
