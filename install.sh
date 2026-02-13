@@ -28,28 +28,87 @@ mkdir -p "$BIN_DIR"
 # ============================================
 # Billing Provider Setup
 # ============================================
+
+# Arrow key selection function
+select_option() {
+    local options=("$@")
+    local selected=0
+    local key
+    
+    # Hide cursor
+    tput civis
+    
+    # Print options
+    print_options() {
+        for i in "${!options[@]}"; do
+            tput cuu1 2>/dev/null || true
+        done
+        tput el 2>/dev/null || true
+        
+        for i in "${!options[@]}"; do
+            tput el 2>/dev/null || true
+            if [ $i -eq $selected ]; then
+                echo -e "  ${GREEN}▸ ${options[$i]}${NC}"
+            else
+                echo -e "    ${options[$i]}"
+            fi
+        done
+    }
+    
+    # Initial print
+    for opt in "${options[@]}"; do
+        echo ""
+    done
+    print_options
+    
+    # Read keys
+    while true; do
+        read -rsn1 key
+        case "$key" in
+            $'\x1b')  # ESC sequence
+                read -rsn2 key
+                case "$key" in
+                    '[A')  # Up arrow
+                        ((selected > 0)) && ((selected--))
+                        ;;
+                    '[B')  # Down arrow
+                        ((selected < ${#options[@]} - 1)) && ((selected++))
+                        ;;
+                esac
+                print_options
+                ;;
+            '')  # Enter
+                break
+                ;;
+        esac
+    done
+    
+    # Show cursor
+    tput cnorm
+    
+    return $selected
+}
+
 echo -e "${BLUE}💳 Billing Setup${NC}"
 echo ""
 echo "How do you want to use Codex?"
-echo ""
-echo "  1) ${GREEN}Codex Pro${NC} - \$200/month subscription (unlimited usage)"
-echo "  2) ${YELLOW}OpenAI API${NC} - Pay per token (usage-based)"
-echo ""
-read -p "Select [1/2]: " -n 1 -r BILLING_CHOICE
-echo ""
+echo -e "${YELLOW}(Use ↑↓ arrows to select, Enter to confirm)${NC}"
+
+select_option \
+    "${GREEN}Codex Pro${NC} - \$200/month subscription (unlimited usage)" \
+    "${YELLOW}OpenAI API${NC} - Pay per token (usage-based)"
+BILLING_CHOICE=$?
 
 case $BILLING_CHOICE in
-    1)
+    0)
         PROVIDER="codex"
+        echo ""
         echo -e "   → Using ${GREEN}Codex Pro${NC} subscription"
         ;;
-    2)
+    1)
         PROVIDER="openai"
+        echo ""
         echo -e "   → Using ${YELLOW}OpenAI API${NC} billing"
-        ;;
-    *)
-        PROVIDER="codex"
-        echo -e "   → Defaulting to ${GREEN}Codex Pro${NC}"
         ;;
 esac
 echo ""
@@ -103,9 +162,13 @@ fi
 
 # Optional: Install Python package
 echo ""
-read -p "📦 Install Python orchestrator (enables multi-agent)? [y/N] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+echo -e "📦 Install Python orchestrator? ${YELLOW}(enables multi-agent)${NC}"
+echo -e "${YELLOW}(Use ↑↓ arrows to select, Enter to confirm)${NC}"
+
+select_option "Yes - Install full orchestrator" "No - Skip"
+INSTALL_PY=$?
+
+if [ $INSTALL_PY -eq 0 ]; then
     echo -e "${GREEN}Installing Python package...${NC}"
     
     # Check for pip
@@ -125,9 +188,13 @@ fi
 
 # Optional: Copy AGENTS.md
 echo ""
-read -p "📝 Copy AGENTS.md to current directory? [y/N] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+echo -e "📝 Copy AGENTS.md to current directory?"
+echo -e "${YELLOW}(Use ↑↓ arrows to select, Enter to confirm)${NC}"
+
+select_option "Yes - Copy AGENTS.md" "No - Skip"
+COPY_AGENTS=$?
+
+if [ $COPY_AGENTS -eq 0 ]; then
     if [ -f "./AGENTS.md" ]; then
         echo -e "${YELLOW}   AGENTS.md exists, backing up to AGENTS.md.bak${NC}"
         mv ./AGENTS.md ./AGENTS.md.bak
