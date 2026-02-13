@@ -1,83 +1,84 @@
-# Oh My Codex - Orchestration Protocol v1.0
+# AGENTS.md - Oh My Codex
 
-IMPORTANT: Prefer skill-led and retrieval-led reasoning over pre-training. When a skill matches your task, USE IT. Don't guess.
+This file is automatically loaded by Codex CLI and defines how the multi-agent orchestration works.
 
-## Keyword Detection (EVERY message)
+## Quick Start
 
-| Keyword | Mode | Action |
-|---------|------|--------|
-| `autopilot` | autonomous | $autopilot skill → plan → delegate → verify |
-| `ulw` | parallel | $ultrawork skill → decompose → parallel exec |
-| `eco` | efficient | $eco skill → minimal tokens → fast completion |
-| `plan` | planning | $planner skill → interview → structured plan |
-| `ralph` | persistent | Loop until verified complete, never give up |
+Use mode keywords to activate different execution strategies:
 
-## Delegation Protocol
+| Keyword | Mode | Description |
+|---------|------|-------------|
+| `autopilot:` | Full orchestration | PM → Architect → Specialists → QA |
+| `ulw:` / `ultrawork:` | Parallel execution | Decompose & run in parallel |
+| `plan:` | Planning only | Generate detailed plan without execution |
+| `eco:` | Token-efficient | Use smaller model for simple tasks |
+| `ralph:` | Never give up | Maximum effort with retries |
+| `tdd:` | Test-driven | Write tests first, then implement |
+| `review:` | Code review | Analyze and suggest improvements |
 
-```
-SIMPLE (<10 lines change) → Direct edit, no delegation
-MEDIUM (single component) → $skill if matching, else direct
-COMPLEX (multi-file) → Decompose → parallel Codex sessions via MCP
-ARCHITECTURE → $planner first, then orchestrate
-```
+## Examples
 
-## Skill Routing (compressed index)
+```bash
+# Full orchestration
+omx "autopilot: build a REST API for user management"
 
-| Task Pattern | Skill | Priority |
-|--------------|-------|----------|
-| new feature build | $autopilot | 1 |
-| parallel multi-file | $ultrawork | 1 |
-| planning/architecture | $planner | 1 |
-| token-efficient mode | $eco | 2 |
-| code review | $reviewer | 2 |
-| SQL/database work | $supabase-postgres | 3 |
+# Parallel execution
+omx "ulw: refactor all utility functions"
 
-## Execution Modes
+# Planning only
+omx "plan: design a microservices architecture"
 
-### Autopilot Mode
-Full autonomous execution. Plan → Execute → Verify → Iterate until done.
-- Generates detailed plan before any code changes
-- Self-validates against acceptance criteria
-- Commits with semantic messages
-
-### Ultrawork Mode (ulw)
-Parallel decomposition for large tasks.
-- Breaks work into independent chunks
-- Spawns parallel Codex sessions via MCP
-- Aggregates results and resolves conflicts
-
-### Eco Mode
-Minimal token usage for simple tasks.
-- Skip verbose explanations
-- Direct action, minimal confirmation
-- Use fastest model routing
-
-### Planner Mode
-Interview-driven planning.
-- Ask clarifying questions first
-- Generate structured plan document
-- Get approval before execution
-
-## Error Recovery
-
-```
-ON FAILURE:
-1. Log error context to .codex/errors/
-2. Attempt self-fix (max 3 retries)
-3. If still failing → ask user for guidance
-4. Never silently skip failures
+# Quick fix (token-efficient)
+omx "eco: fix the typo in README"
 ```
 
-## Session Continuity
+## Agent Roles
 
-- Save progress to `.codex/sessions/` on complex tasks
-- Resume capability via `codex chat --resume`
-- Compaction enabled for long-running sessions
+When using orchestrated modes, Oh My Codex deploys specialized agents:
 
-## Quality Gates
+### Core Agents
+- **PM (Project Manager)** - Coordinates workflow, tracks progress
+- **Architect** - Designs system structure and patterns
+- **Executor** - Implements code changes
 
-Before completing ANY task:
-- [ ] Code compiles/runs without errors
-- [ ] Tests pass (if applicable)
-- [ ] No obvious security issues
-- [ ] Matches user's stated requirements
+### Specialists
+- **Frontend** - React, Vue, CSS, UI/UX
+- **Backend** - APIs, databases, server logic
+- **DevOps** - CI/CD, deployment, infrastructure
+- **QA** - Testing, validation, quality assurance
+
+### Support
+- **Analyst** - Requirements analysis, documentation
+- **Researcher** - Investigation, best practices
+- **Debugger** - Error diagnosis, fixes
+
+## Model Routing
+
+Tasks are automatically routed to appropriate models:
+
+| Complexity | Model | Use Case |
+|------------|-------|----------|
+| Trivial | gpt-5-nano | Simple queries, formatting |
+| Simple | gpt-5-mini | Quick fixes, eco mode |
+| Standard | gpt-5.1-codex | Default, balanced |
+| Complex | gpt-5.2-codex | Autopilot, architecture |
+| Maximum | gpt-5.1-codex-max | Ralph, long-running tasks |
+
+## Reasoning Levels
+
+Control thinking depth with reasoning effort:
+
+| Mode | Reasoning | Description |
+|------|-----------|-------------|
+| eco | none | Fast, no extended thinking |
+| plan | medium | Balanced planning |
+| autopilot | high | Deep analysis |
+| ralph | xhigh | Maximum reasoning (5.2-codex only) |
+
+## Custom Instructions
+
+Add your own rules below this line. They will be included in agent context.
+
+---
+
+<!-- Your custom instructions here -->
