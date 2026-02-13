@@ -47,7 +47,7 @@ omx-setup  # Interactive setup wizard
 ### Option 2: pip with full orchestration
 
 ```bash
-pip install oh-my-codex[full]  # Includes OpenAI Agents SDK
+pip install "oh-my-codex[full]"  # Includes OpenAI Agents SDK
 omx-setup
 ```
 
@@ -62,7 +62,7 @@ cd oh-my-codex
 ### Option 4: uv (fast)
 
 ```bash
-uv pip install oh-my-codex[full]
+uv pip install "oh-my-codex[full]"
 omx-setup
 ```
 

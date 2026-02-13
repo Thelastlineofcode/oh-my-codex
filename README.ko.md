@@ -47,7 +47,7 @@ omx-setup  # 대화형 설정 마법사
 ### 방법 2: pip 전체 설치 (오케스트레이션 포함)
 
 ```bash
-pip install oh-my-codex[full]  # OpenAI Agents SDK 포함
+pip install "oh-my-codex[full]"  # OpenAI Agents SDK 포함
 omx-setup
 ```
 
@@ -62,7 +62,7 @@ cd oh-my-codex
 ### 방법 4: uv (빠름)
 
 ```bash
-uv pip install oh-my-codex[full]
+uv pip install "oh-my-codex[full]"
 omx-setup
 ```
 
