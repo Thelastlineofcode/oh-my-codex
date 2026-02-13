@@ -10,6 +10,18 @@ SESSION_ID_UNIQUE_LENGTH = 8
 SESSION_LIST_LIMIT = 15
 SESSION_CLEANUP_DAYS = 30
 
+# State management
+STATE_DB_FILENAME = "omx-state.db"
+STATE_CLEANUP_DAYS = 30
+
+# Verification
+VERIFY_MAX_RETRIES = 3
+VERIFY_SKIP_MODES = {"plan", "eco", "research", "deepsearch"}
+
+# HUD
+HUD_DEFAULT_PRESET = "focused"
+HUD_WATCH_INTERVAL = 2.0  # seconds
+
 # Billing providers
 PROVIDER_CODEX = "codex"      # Subscription model ($200/month)
 PROVIDER_OPENAI = "openai"    # API billing (pay per token)

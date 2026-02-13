@@ -12,8 +12,10 @@ from typing import Any, TYPE_CHECKING
 from datetime import datetime
 
 from .agents import AgentRole, AgentConfig, ModelTier, AGENT_CONFIGS, get_agent_config
-from .constants import MODE_REASONING_MAP, REASONING_NONE
+from .constants import MODE_REASONING_MAP, REASONING_NONE, VERIFY_SKIP_MODES
 from .tools import ALL_TOOLS, get_tools_for_role
+from .state import StateManager
+from .verify import Verifier, VerificationTier
 
 if TYPE_CHECKING:
     from agents import Agent
@@ -40,6 +42,7 @@ class Orchestrator:
         self.verbose = verbose
         self.session_manager = SessionManager()
         self.mcp_manager = MCPManager()
+        self.state_manager = StateManager()
         self._agents: dict[str, Agent] = {}
     
     def log(self, msg: str, level: str = "info") -> None:
@@ -128,9 +131,12 @@ class Orchestrator:
             self.log(f"Created session: {session.id}", "info")
         
         try:
+            # Start state tracking
+            self.state_manager.start_mode(mode, session.id)
+
             # Determine which agents to use based on mode
             agent_roles = self._get_agents_for_mode(mode)
-            
+
             self.log(f"Mode: {mode}", "info")
             self.log(f"Agents: {', '.join(r.value for r in agent_roles)}", "info")
             
@@ -148,19 +154,37 @@ class Orchestrator:
             
             self.log(f"Starting orchestration...", "info")
             self.log(f"Task: {task[:100]}{'...' if len(task) > 100 else ''}", "info")
-            
+            self.state_manager.update_phase(session.id, "executing")
+
             # Choose execution strategy
             if mode == "ultrawork" and len(agent_roles) > 2:
                 result = await self._run_parallel(task, agent_roles, prompt)
             else:
                 result = await Runner.run(pm, prompt)
-            
+
             # Extract final output
             final_output = getattr(result, 'final_output', str(result))
-            
+
+            # Log agent activities
+            for role in agent_roles:
+                self.state_manager.log_agent(session.id, role.value, "completed")
+
+            # Verification step (skip for certain modes)
+            if mode not in VERIFY_SKIP_MODES:
+                self.state_manager.update_phase(session.id, "verifying")
+                self.log("Running verification...", "info")
+                verifier = Verifier()
+                vresult = verifier.verify(mode=mode)
+                if not vresult.passed:
+                    self.log(f"Verification: {vresult.summary}", "warn")
+                else:
+                    self.log(f"Verification passed: {vresult.summary}", "success")
+
             # Mark session complete
+            self.state_manager.update_phase(session.id, "completed")
+            self.state_manager.end_mode(session.id)
             self.session_manager.complete(session, success=True)
-            
+
             return {
                 "success": True,
                 "result": final_output,
@@ -168,9 +192,10 @@ class Orchestrator:
                 "mode": mode,
                 "agents_used": [r.value for r in agent_roles],
             }
-            
+
         except Exception as e:
             self.log(f"Error: {str(e)}", "error")
+            self.state_manager.end_mode(session.id)
             self.session_manager.complete(session, success=False)
             return {
                 "success": False,

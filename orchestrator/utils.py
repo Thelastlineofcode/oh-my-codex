@@ -86,6 +86,13 @@ def get_sessions_dir() -> Path:
     return get_codex_dir() / "sessions"
 
 
+def get_state_dir() -> Path:
+    """Get the state directory for SQLite DB."""
+    state_dir = Path(".omc") / "state"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    return state_dir
+
+
 def get_plans_dir() -> Path:
     """Get the plans directory."""
     return get_codex_dir() / "plans"
