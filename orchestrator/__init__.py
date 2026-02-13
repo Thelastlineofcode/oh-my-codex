@@ -13,7 +13,7 @@ from .verify import Verifier, VerificationTier, VerificationResult, ProjectDetec
 from .hud import HUD, HUDPreset, HUDRenderer, HUDData
 from .analytics import AnalyticsEngine, AnalyticsSummary, AgentPerformanceMetrics
 
-__version__ = "0.1.6"
+__version__ = "0.2.0"
 
 __all__ = [
     "Orchestrator",

@@ -22,7 +22,7 @@ from .constants import (
 from .utils import get_billing_provider, set_billing_provider, get_config
 
 # Version
-__version__ = "0.1.6"
+__version__ = "0.2.0"
 
 # Colors
 class C:
