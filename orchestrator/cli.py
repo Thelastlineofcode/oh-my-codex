@@ -262,6 +262,100 @@ def export_analytics(fmt: str = "json") -> None:
         print(f"❌ Export error: {e}")
 
 
+def show_hooks(config_path: str | None = None) -> None:
+    """Show configured hooks."""
+    try:
+        from .hooks import HookManager
+        mgr = HookManager()
+        if config_path:
+            mgr.load_from_config(config_path)
+        hooks = mgr.get_hooks()
+        if not hooks:
+            print("  No hooks configured.")
+            return
+        print(f"\n  {'Event':<20} {'Name':<15} {'Command':<30} {'Enabled'}")
+        print(f"  {'─' * 70}")
+        for h in hooks:
+            enabled = "✅" if h.enabled else "❌"
+            print(f"  {h.event.value:<20} {h.name:<15} {h.command[:30]:<30} {enabled}")
+        print()
+    except Exception as e:
+        print(f"❌ Hooks error: {e}")
+
+
+def show_skills() -> None:
+    """Show installed skills."""
+    try:
+        from .skills import SkillManager
+        mgr = SkillManager()
+        skills = mgr.list_skills()
+        if not skills:
+            print("  No skills installed.")
+            return
+        print(f"\n  {'Name':<20} {'Version':<10} {'Keywords':<30} {'Description'}")
+        print(f"  {'─' * 80}")
+        for s in skills:
+            kw = ", ".join(s.keywords[:3]) if s.keywords else "-"
+            desc = s.description[:30] if s.description else "-"
+            print(f"  {s.name:<20} {s.version:<10} {kw:<30} {desc}")
+        print()
+    except Exception as e:
+        print(f"❌ Skills error: {e}")
+
+
+def check_update() -> None:
+    """Check for updates."""
+    try:
+        from .updater import Updater
+        updater = Updater()
+        info = updater.check_update()
+        if info.update_available:
+            print(f"\n  ⬆ Update available: v{info.current} → v{info.latest}")
+            print(f"  Run: pip install --upgrade oh-my-codex\n")
+        else:
+            print(f"  ✅ Up to date (v{info.current})\n")
+    except Exception as e:
+        print(f"❌ Update check error: {e}")
+
+
+def show_providers() -> None:
+    """Show provider configuration."""
+    try:
+        from .providers import ProviderManager, ProviderType, PROVIDER_MODELS
+        print(f"\n  {'Provider':<12} {'Default Model':<25} {'Tiers'}")
+        print(f"  {'─' * 60}")
+        for pt in ProviderType:
+            models = PROVIDER_MODELS.get(pt, {})
+            default = models.get("standard", "N/A")
+            tiers = ", ".join(f"{k}={v}" for k, v in models.items())
+            print(f"  {pt.value:<12} {default:<25} {tiers}")
+        print()
+    except Exception as e:
+        print(f"❌ Providers error: {e}")
+
+
+def show_team() -> None:
+    """Show team status."""
+    try:
+        from .team import TeamBridge
+        bridge = TeamBridge()
+        if not bridge.load_state():
+            print("  No active team.")
+            return
+        workers = bridge.list_workers()
+        tasks = bridge.get_pending_tasks()
+        print(f"\n  Workers: {len(workers)}  |  Pending tasks: {len(tasks)}")
+        if workers:
+            print(f"\n  {'ID':<15} {'Role':<12} {'Status':<10} {'Task'}")
+            print(f"  {'─' * 50}")
+            for w in workers:
+                task = w.current_task or "-"
+                print(f"  {w.id:<15} {w.role:<12} {w.status.value:<10} {task}")
+        print()
+    except Exception as e:
+        print(f"❌ Team error: {e}")
+
+
 def show_status() -> None:
     """Show status."""
     print_banner()
@@ -331,7 +425,7 @@ def dispatch_prompt(prompt: str, mode_override: str | None = None,
 def interactive_mode() -> None:
     """Run omx in interactive REPL mode."""
     print_banner()
-    print(f"    {C.DIM}Type a task to execute. Commands: status, list, hud, verify, analytics, help, clear, exit{C.RESET}")
+    print(f"    {C.DIM}Type a task to execute. Commands: status, list, hud, verify, analytics, hooks, skills, team, update, help, clear, exit{C.RESET}")
     print()
 
     HELP_TEXT = f"""
@@ -357,6 +451,11 @@ def interactive_mode() -> None:
     {C.GREEN}hud watch{C.RESET}   Live HUD refresh
     {C.GREEN}verify{C.RESET}      Run verification {C.DIM}(verify light|standard|thorough){C.RESET}
     {C.GREEN}analytics{C.RESET}   Show analytics {C.DIM}(analytics agents|models|recommend){C.RESET}
+    {C.GREEN}hooks{C.RESET}       Show configured hooks
+    {C.GREEN}skills{C.RESET}      Show installed skills
+    {C.GREEN}update{C.RESET}      Check for updates
+    {C.GREEN}providers{C.RESET}   Show AI providers
+    {C.GREEN}team{C.RESET}        Show team status
     {C.GREEN}help{C.RESET}        Show this help
     {C.GREEN}clear{C.RESET}       Clear screen
     {C.GREEN}exit{C.RESET}        Quit omx
@@ -381,6 +480,16 @@ def interactive_mode() -> None:
             show_status()
         elif cmd == "list":
             list_sessions()
+        elif cmd == "hooks":
+            show_hooks()
+        elif cmd.startswith("skills"):
+            show_skills()
+        elif cmd == "update":
+            check_update()
+        elif cmd == "providers":
+            show_providers()
+        elif cmd == "team":
+            show_team()
         elif cmd.startswith("hud"):
             parts = cmd.split()
             if len(parts) >= 2 and parts[1] == "watch":
@@ -457,6 +566,13 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
                        help="Show analytics (summary/agents/models/recommend)")
     parser.add_argument("--export", choices=["json", "csv"], help="Export analytics data")
 
+    # New module flags
+    parser.add_argument("--hooks", action="store_true", help="Show hooks")
+    parser.add_argument("--skills", action="store_true", help="Show skills")
+    parser.add_argument("--update", action="store_true", help="Check for updates")
+    parser.add_argument("--providers", action="store_true", help="Show providers")
+    parser.add_argument("--team", action="store_true", help="Show team status")
+
     args = parser.parse_args()
 
     if args.set_provider:
@@ -478,6 +594,26 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
 
     if args.export:
         export_analytics(args.export)
+        return
+
+    if args.hooks:
+        show_hooks()
+        return
+
+    if args.skills:
+        show_skills()
+        return
+
+    if args.update:
+        check_update()
+        return
+
+    if args.providers:
+        show_providers()
+        return
+
+    if args.team:
+        show_team()
         return
 
     if args.status:

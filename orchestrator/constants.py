@@ -22,6 +22,30 @@ VERIFY_SKIP_MODES = {"plan", "eco", "research", "deepsearch"}
 HUD_DEFAULT_PRESET = "focused"
 HUD_WATCH_INTERVAL = 2.0  # seconds
 
+# Hooks
+HOOKS_CONFIG_FILENAME = "hooks.json"
+
+# Notifications
+NOTIFICATION_CONFIG_FILENAME = "notifications.json"
+NOTIFICATION_TIMEOUT = 10  # seconds
+
+# Skills
+SKILLS_DIR_NAME = "skills"
+
+# Context
+CONTEXT_DIR_NAME = "context"
+CONTEXT_SESSION_PREFIX = "session_"
+CONTEXT_GLOBAL_FILENAME = "global_memory.json"
+
+# Updater
+UPDATE_CHECK_INTERVAL = 86400  # 24 hours in seconds
+
+# Team
+TEAM_DIR_NAME = "team"
+TEAM_STATE_FILENAME = "team-state.json"
+TEAM_HEARTBEAT_TIMEOUT = 60  # seconds
+TEAM_MAX_WORKERS = 10
+
 # Billing providers
 PROVIDER_CODEX = "codex"      # Subscription model ($200/month)
 PROVIDER_OPENAI = "openai"    # API billing (pay per token)

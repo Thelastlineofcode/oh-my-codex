@@ -12,8 +12,15 @@ from .state import StateManager, ModeState, AgentActivity, TokenUsage, StateSnap
 from .verify import Verifier, VerificationTier, VerificationResult, ProjectDetector
 from .hud import HUD, HUDPreset, HUDRenderer, HUDData
 from .analytics import AnalyticsEngine, AnalyticsSummary, AgentPerformanceMetrics
+from .hooks import HookManager, HookEvent, HookConfig, HookResult, HookContext
+from .notifications import NotificationManager, NotificationChannel, NotificationLevel, NotificationConfig, Notification, NotificationResult
+from .skills import SkillManager, Skill, SkillMatch
+from .context import ContextManager, MemoryEntry, MemoryScope, MemoryPriority
+from .updater import Updater, VersionInfo
+from .providers import ProviderManager, ProviderConfig, ProviderType, ProviderResponse, PROVIDER_MODELS, TASK_ROUTING
+from .team import TeamBridge, Worker, TeamTask, WorkerStatus, TaskStatus
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "Orchestrator",
@@ -50,4 +57,42 @@ __all__ = [
     "AnalyticsEngine",
     "AnalyticsSummary",
     "AgentPerformanceMetrics",
+    # Hooks
+    "HookManager",
+    "HookEvent",
+    "HookConfig",
+    "HookResult",
+    "HookContext",
+    # Notifications
+    "NotificationManager",
+    "NotificationChannel",
+    "NotificationLevel",
+    "NotificationConfig",
+    "Notification",
+    "NotificationResult",
+    # Skills
+    "SkillManager",
+    "Skill",
+    "SkillMatch",
+    # Context
+    "ContextManager",
+    "MemoryEntry",
+    "MemoryScope",
+    "MemoryPriority",
+    # Updater
+    "Updater",
+    "VersionInfo",
+    # Providers
+    "ProviderManager",
+    "ProviderConfig",
+    "ProviderType",
+    "ProviderResponse",
+    "PROVIDER_MODELS",
+    "TASK_ROUTING",
+    # Team
+    "TeamBridge",
+    "Worker",
+    "TeamTask",
+    "WorkerStatus",
+    "TaskStatus",
 ]
