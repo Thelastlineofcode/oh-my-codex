@@ -134,10 +134,10 @@ omx "review: 인증 모듈 감사해"
 
 | 작업 복잡도 | 모델 |
 |-------------|------|
-| 사소함 | gpt-5-nano |
-| 단순 | gpt-5-mini |
-| 표준 | gpt-5.1-codex |
-| 복잡 | gpt-5.2-codex |
+| 실시간 | gpt-5.3-codex-spark |
+| 단순 | gpt-5-codex-mini |
+| 표준 | gpt-5.2-codex |
+| 복잡 | gpt-5.3-codex |
 | 장기 실행 | gpt-5.1-codex-max |
 
 ### 추론 강도 (Reasoning Effort)
@@ -148,12 +148,12 @@ omx "review: 인증 모듈 감사해"
 | `low` | 가벼운 작업 | tdd, pipeline |
 | `medium` | 균형 | plan, ultrawork |
 | `high` | 깊은 사고 | autopilot, review |
-| `xhigh` | 최대 (5.2-codex) | ralph, ultrapilot, debug |
+| `xhigh` | 최대 (5.3-codex) | ralph, ultrapilot, debug |
 
 ```bash
 # 수동 지정
 omx --reasoning xhigh "복잡한 아키텍처 결정"
-omx --model gpt-5.2-codex "중요한 작업"
+omx --model gpt-5.3-codex "중요한 작업"
 ```
 
 ## 에이전트 (32개)
@@ -161,9 +161,9 @@ omx --model gpt-5.2-codex "중요한 작업"
 ### 오케스트레이션
 | 에이전트 | 모델 | 역할 |
 |----------|------|------|
-| PM | gpt-5.2-codex | 마스터 오케스트레이터, 작업 위임 |
-| Coordinator | gpt-5.2-codex | 병렬 실행 관리 |
-| Executor | gpt-5.1-codex | 작업 실행 |
+| PM | gpt-5.3-codex | 마스터 오케스트레이터, 작업 위임 |
+| Coordinator | gpt-5.3-codex | 병렬 실행 관리 |
+| Executor | gpt-5.2-codex | 작업 실행 |
 
 ### 개발
 | 에이전트 | 전문 분야 |
@@ -226,7 +226,7 @@ omx "작업"                        # 모드 자동 감지
 omx "autopilot: 작업"             # 명시적 모드
 
 # 옵션
-omx --model gpt-5.2-codex "작업"  # 모델 지정
+omx --model gpt-5.3-codex "작업"  # 모델 지정
 omx --reasoning high "작업"       # 추론 레벨
 omx --provider openai "작업"      # API 과금 사용
 omx -v "작업"                     # 상세 출력
@@ -250,12 +250,12 @@ billing:
   provider: codex  # 또는 "openai"
 
 model:
-  default: gpt-5.1-codex
+  default: gpt-5.3-codex
   routing:
-    nano: gpt-5-nano
-    mini: gpt-5-mini
-    standard: gpt-5.1-codex
-    powerful: gpt-5.2-codex
+    spark: gpt-5.3-codex-spark
+    mini: gpt-5-codex-mini
+    standard: gpt-5.2-codex
+    powerful: gpt-5.3-codex
     max: gpt-5.1-codex-max
   reasoning:
     default: none
@@ -275,7 +275,7 @@ skills:
               ▼
        ┌─────────────┐
        │ 모드 감지    │ → autopilot
-       │ 모델 라우팅  │ → gpt-5.2-codex
+       │ 모델 라우팅  │ → gpt-5.3-codex
        │ 추론 레벨   │ → high
        └──────┬──────┘
               ▼

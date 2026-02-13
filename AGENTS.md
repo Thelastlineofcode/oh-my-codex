@@ -58,10 +58,10 @@ Tasks are automatically routed to appropriate models:
 
 | Complexity | Model | Use Case |
 |------------|-------|----------|
-| Trivial | gpt-5-nano | Simple queries, formatting |
-| Simple | gpt-5-mini | Quick fixes, eco mode |
-| Standard | gpt-5.1-codex | Default, balanced |
-| Complex | gpt-5.2-codex | Autopilot, architecture |
+| Real-time | gpt-5.3-codex-spark | Simple queries, 1000+ tok/s |
+| Simple | gpt-5-codex-mini | Quick fixes, eco mode |
+| Standard | gpt-5.2-codex | Default, balanced |
+| Complex | gpt-5.3-codex | Autopilot, architecture |
 | Maximum | gpt-5.1-codex-max | Ralph, long-running tasks |
 
 ## Reasoning Levels
@@ -73,7 +73,7 @@ Control thinking depth with reasoning effort:
 | eco | none | Fast, no extended thinking |
 | plan | medium | Balanced planning |
 | autopilot | high | Deep analysis |
-| ralph | xhigh | Maximum reasoning (5.2-codex only) |
+| ralph | xhigh | Maximum reasoning (5.3-codex) |
 
 ## Custom Instructions
 

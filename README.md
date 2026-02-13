@@ -134,10 +134,10 @@ omx "review: audit the authentication module"
 
 | Task Complexity | Model |
 |-----------------|-------|
-| Trivial | gpt-5-nano |
-| Simple | gpt-5-mini |
-| Standard | gpt-5.1-codex |
-| Complex | gpt-5.2-codex |
+| Real-time | gpt-5.3-codex-spark |
+| Simple | gpt-5-codex-mini |
+| Standard | gpt-5.2-codex |
+| Complex | gpt-5.3-codex |
 | Long-running | gpt-5.1-codex-max |
 
 ### Reasoning Effort
@@ -148,12 +148,12 @@ omx "review: audit the authentication module"
 | `low` | Light tasks | tdd, pipeline |
 | `medium` | Balanced | plan, ultrawork |
 | `high` | Deep thinking | autopilot, review |
-| `xhigh` | Maximum (5.2-codex) | ralph, ultrapilot, debug |
+| `xhigh` | Maximum (5.3-codex) | ralph, ultrapilot, debug |
 
 ```bash
 # Manual override
 omx --reasoning xhigh "complex architecture decision"
-omx --model gpt-5.2-codex "critical task"
+omx --model gpt-5.3-codex "critical task"
 ```
 
 ## Agents (32)
@@ -161,9 +161,9 @@ omx --model gpt-5.2-codex "critical task"
 ### Orchestration
 | Agent | Model | Role |
 |-------|-------|------|
-| PM | gpt-5.2-codex | Master orchestrator, delegates tasks |
-| Coordinator | gpt-5.2-codex | Manages parallel execution |
-| Executor | gpt-5.1-codex | Gets things done |
+| PM | gpt-5.3-codex | Master orchestrator, delegates tasks |
+| Coordinator | gpt-5.3-codex | Manages parallel execution |
+| Executor | gpt-5.2-codex | Gets things done |
 
 ### Development
 | Agent | Expertise |
@@ -226,7 +226,7 @@ omx "task"                      # Auto-detect mode
 omx "autopilot: task"           # Explicit mode
 
 # Options
-omx --model gpt-5.2-codex "task"  # Model override
+omx --model gpt-5.3-codex "task"  # Model override
 omx --reasoning high "task"       # Reasoning level
 omx --provider openai "task"      # Use API billing
 omx -v "task"                     # Verbose output
@@ -250,12 +250,12 @@ billing:
   provider: codex  # or "openai"
 
 model:
-  default: gpt-5.1-codex
+  default: gpt-5.3-codex
   routing:
-    nano: gpt-5-nano
-    mini: gpt-5-mini
-    standard: gpt-5.1-codex
-    powerful: gpt-5.2-codex
+    spark: gpt-5.3-codex-spark
+    mini: gpt-5-codex-mini
+    standard: gpt-5.2-codex
+    powerful: gpt-5.3-codex
     max: gpt-5.1-codex-max
   reasoning:
     default: none
@@ -275,7 +275,7 @@ User: omx "autopilot: build API"
          ▼
     ┌─────────────┐
     │ Mode Detect │ → autopilot
-    │ Model Route │ → gpt-5.2-codex
+    │ Model Route │ → gpt-5.3-codex
     │ Reasoning   │ → high
     └──────┬──────┘
            ▼

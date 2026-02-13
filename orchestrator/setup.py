@@ -154,12 +154,12 @@ billing:
   provider: {provider}
 
 model:
-  default: gpt-5.1-codex
+  default: gpt-5.3-codex
   routing:
-    nano: gpt-5-nano
-    mini: gpt-5-mini
-    standard: gpt-5.1-codex
-    powerful: gpt-5.2-codex
+    spark: gpt-5.3-codex-spark
+    mini: gpt-5-codex-mini
+    standard: gpt-5.2-codex
+    powerful: gpt-5.3-codex
     max: gpt-5.1-codex-max
   reasoning:
     default: none

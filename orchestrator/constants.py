@@ -98,21 +98,22 @@ DIRECT_MODES: List[str] = [
 ]
 
 # Model tiers (2026-02 latest)
-MODEL_NANO = "gpt-5-nano"           # Fastest, cheapest
-MODEL_MINI = "gpt-5-mini"           # Fast, cheap  
-MODEL_STANDARD = "gpt-5.1-codex"    # Balanced (Codex optimized)
-MODEL_POWERFUL = "gpt-5.2-codex"    # Most capable
+MODEL_SPARK = "gpt-5.3-codex-spark" # Real-time, 1000+ tok/s
+MODEL_MINI = "gpt-5-codex-mini"     # Cost-effective
+MODEL_STANDARD = "gpt-5.2-codex"    # Balanced
+MODEL_POWERFUL = "gpt-5.3-codex"    # Most capable
 MODEL_MAX = "gpt-5.1-codex-max"     # Long-running tasks
 
 # Legacy aliases
-MODEL_FAST = MODEL_MINI
+MODEL_FAST = MODEL_SPARK
+MODEL_NANO = MODEL_MINI
 
 # Reasoning effort levels (for GPT-5.1+)
 REASONING_NONE = "none"
 REASONING_LOW = "low"
 REASONING_MEDIUM = "medium"
 REASONING_HIGH = "high"
-REASONING_XHIGH = "xhigh"  # GPT-5.2-codex only
+REASONING_XHIGH = "xhigh"  # GPT-5.3-codex
 DEFAULT_REASONING = REASONING_NONE
 
 # Mode to model mapping

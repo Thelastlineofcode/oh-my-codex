@@ -22,7 +22,7 @@ from .constants import (
 from .utils import get_billing_provider, set_billing_provider, get_config
 
 # Version
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 # Colors
 class C:
@@ -47,7 +47,7 @@ BANNER = f"""{C.ORANGE}
 def print_banner(model: str | None = None, provider: str | None = None) -> None:
     """Print the startup banner."""
     config = get_config()
-    effective_model = model or config.get("model", {}).get("default", "gpt-5.1-codex")
+    effective_model = model or config.get("model", {}).get("default", "gpt-5.3-codex")
     effective_provider = provider or get_billing_provider()
     user = getpass.getuser()
     cwd = Path.cwd()

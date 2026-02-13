@@ -167,7 +167,7 @@ def interactive_mode():
     ╚██████╔╝██║ ╚═╝ ██║██╔╝ ██╗
      ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝{RESET}
 
-    {DIM}Oh My Codex{RESET} v0.1.3
+    {DIM}Oh My Codex{RESET} v0.1.6
     {DIM}/{user}{RESET}
 
     {DIM}Type a task to execute. Commands: status, list, help, clear, exit{RESET}
