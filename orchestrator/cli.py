@@ -295,12 +295,13 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
 """,
     )
 
+    parser.add_argument("-V", "--version", action="version", version=f"omx {__version__}")
     parser.add_argument("prompt", nargs="*", help="Task prompt")
     parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"])
     parser.add_argument("--model", help="Model override")
     parser.add_argument("--provider", choices=["codex", "openai"], help="Billing provider override")
     parser.add_argument("--reasoning", choices=["none", "low", "medium", "high", "xhigh"],
-                       help="Reasoning effort (xhigh for GPT-5.2-codex only)")
+                       help="Reasoning effort (xhigh for GPT-5.3-codex)")
     parser.add_argument("-r", "--resume", help="Resume session")
     parser.add_argument("-l", "--list", action="store_true", help="List sessions")
     parser.add_argument("-s", "--status", action="store_true", help="Show status")

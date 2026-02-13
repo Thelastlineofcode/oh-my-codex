@@ -245,6 +245,7 @@ Keywords:
 """,
     )
 
+    parser.add_argument("-V", "--version", action="version", version="omx 0.1.6")
     parser.add_argument("prompt", nargs="*", help="Task prompt")
     parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"],
                        help="Force execution mode")
