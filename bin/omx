@@ -141,7 +141,7 @@ def show_status():
         print("⚠️ No skills installed")
     
     # Check config
-    config_path = Path.home() / ".codex" / "config.toml"
+    config_path = Path.home() / ".codex" / "config.yaml"
     if config_path.exists():
         print(f"✅ Config: {config_path}")
     else:
