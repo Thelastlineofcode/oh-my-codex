@@ -1,215 +1,303 @@
 # Oh My Codex
 
 <p align="center">
-  <strong>OpenAI Codex CLI를 위한 멀티에이전트 오케스트레이션 시스템</strong>
+  <strong>🚀 OpenAI Codex CLI를 위한 멀티 에이전트 오케스트레이션</strong><br>
+  <em>Codex를 AI 에이전트 팀으로 만들어줍니다</em>
 </p>
 
 <p align="center">
-  <a href="#특징">특징</a> •
+  <a href="https://pypi.org/project/oh-my-codex/"><img src="https://img.shields.io/pypi/v/oh-my-codex" alt="PyPI"></a>
+  <a href="https://github.com/junghwaYang/oh-my-codex/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://github.com/junghwaYang/oh-my-codex"><img src="https://img.shields.io/github/stars/junghwaYang/oh-my-codex" alt="Stars"></a>
+</p>
+
+<p align="center">
+  <a href="#설치">설치</a> •
   <a href="#빠른-시작">빠른 시작</a> •
-  <a href="#실행-모드">실행 모드</a> •
-  <a href="#스킬">스킬</a> •
+  <a href="#실행-모드">모드</a> •
   <a href="#에이전트">에이전트</a> •
+  <a href="#도구">도구</a> •
   <a href="README.md">English</a>
 </p>
 
 ---
 
-[oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)에서 영감을 받아 OpenAI Codex CLI용으로 구현.
-
 ## 왜 Oh My Codex?
 
-OpenAI Codex CLI는 강력하지만, Claude Code + oh-my-claudecode의 멀티에이전트 오케스트레이션 기능이 없습니다. 이 프로젝트가 그 간극을 메웁니다.
+Codex CLI 혼자도 강력합니다. **Oh My Codex는 이를 팀으로 만들어줍니다.**
 
-[Vercel 리서치](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals)에 따르면 **AGENTS.md가 스킬보다 성능이 좋습니다** (100% vs 79%). 그래서 AGENTS.md-First 설계를 사용합니다.
+| Codex CLI | Oh My Codex |
+|-----------|-------------|
+| 단일 에이전트 | 32개 전문 에이전트 |
+| 수동 모델 선택 | 자동 모델 라우팅 |
+| 순차 실행 | 병렬 실행 |
+| 세션 메모리 없음 | 세션 저장/재개 |
 
-## 특징
+[Vercel 연구](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) 기반: **AGENTS.md가 100% 통과율** 달성 (스킬만 사용 시 79%)
 
-| 특징 | 설명 |
-|------|------|
-| 🧠 **AGENTS.md-First** | 핵심 오케스트레이션이 항상 컨텍스트에 있음 |
-| 🚀 **8가지 실행 모드** | team, autopilot, ultrawork, ralph, pipeline, eco, plan, ultrapilot |
-| 🔧 **31개 스킬** | oh-my-claudecode와 동등한 기능 |
-| 🤖 **32개 에이전트** | PM부터 데이터 사이언티스트까지 |
-| 📊 **스마트 라우팅** | 자동 모델 선택 |
-| 💾 **세션 관리** | 일시정지, 재개, 추적 |
-| 📡 **HUD & 트레이싱** | 실시간 메트릭과 디버깅 |
+## 설치
+
+### 방법 1: PyPI (권장)
+
+```bash
+pip install oh-my-codex
+omx-setup  # 대화형 설정 마법사
+```
+
+### 방법 2: 소스에서
+
+```bash
+git clone https://github.com/junghwaYang/oh-my-codex.git
+cd oh-my-codex
+./install.sh
+```
+
+### 필수 요건
+
+- Python 3.10+
+- [Codex CLI](https://github.com/openai/codex) 설치됨
+- OpenAI API 키 또는 Codex Pro 구독
 
 ## 빠른 시작
 
 ```bash
-# 클론
-git clone https://github.com/junghwaYang/oh-my-codex.git
-cd oh-my-codex
+# 기본 사용 (직접 Codex 호출)
+omx "auth.py 버그 수정해"
 
-# 설치
-./install.sh
+# 멀티 에이전트 자율 실행
+omx "autopilot: 인증 기능 있는 REST API 만들어"
 
-# 사용
-omx "autopilot: REST API 만들어줘"
+# 병렬 실행
+omx "ulw: 모든 컴포넌트 TypeScript로 변환"
+
+# 포기 안 하는 모드
+omx "ralph: 실패하는 테스트 전부 고쳐"
 ```
 
 ## 실행 모드
 
-| 모드 | 키워드 | 설명 |
-|------|--------|------|
-| **Team** | `team:` | 멀티에이전트 파이프라인 (plan→exec→verify→fix) |
-| **Autopilot** | `autopilot:` | 완전 자율 실행 |
-| **Ultrawork** | `ulw:` | 병렬 멀티파일 작업 |
-| **Ralph** | `ralph:` | 지속 모드 (포기 안 함) |
-| **Ultrapilot** | `ultrapilot:` | 최대 병렬화 |
-| **Pipeline** | `pipeline:` | 순차적 단계 처리 |
-| **Eco** | `eco:` | 토큰 효율적 실행 |
-| **Plan** | `plan:` | 인터뷰 기반 계획 |
+| 키워드 | 모드 | 설명 | 에이전트 |
+|--------|------|------|----------|
+| `autopilot:` | 자율 실행 | 완전 자동 | PM → Executor → Tester → Reviewer |
+| `ulw:` | 병렬 실행 | 멀티 에이전트 병렬 | PM + Frontend + Backend + Tester |
+| `ultrapilot:` | 최대 병렬 | 모든 전문가 동시 | 전체 스페셜리스트 |
+| `team:` | 팀 | 파이프라인 오케스트레이션 | plan → exec → verify → fix 루프 |
+| `ralph:` | 끈질긴 | 절대 포기 안 함 | PM → Executor → Debugger |
+| `plan:` | 기획 | 실행 없이 계획만 | Planner + Architect |
+| `eco:` | 절약 | 토큰 효율적, 빠름 | 단일 Executor |
+| `tdd:` | TDD | 테스트 주도 개발 | Tester → Executor |
+| `review:` | 리뷰 | 코드 리뷰 | Reviewer + Security |
+| `debug:` | 디버그 | 체계적 디버깅 | Debugger + Analyst |
 
 ### 예시
 
 ```bash
-# Team 오케스트레이션 (복잡한 작업에 추천)
-omx "team: 인증 포함 풀스택 앱 만들어줘"
-
-# 기능 개발용 Autopilot
-omx "autopilot: 사용자 대시보드 구현해줘"
+# 복잡한 기능 개발
+omx "autopilot: Google, GitHub OAuth2 구현해"
 
 # 병렬 리팩토링
-omx "ulw: userId를 user_id로 전부 변경해줘"
+omx "ulw: 모든 클래스 컴포넌트를 훅으로 변환"
 
-# 지속적 디버깅
-omx "ralph: 모든 TypeScript 에러 고쳐줘"
+# 끈질긴 버그 수정
+omx "ralph: 로그인 리다이렉트 안 되는 거 고쳐"
 
-# 토큰 효율적 빠른 수정
-omx "eco: gitignore에 .env 추가해줘"
+# 아키텍처 기획
+omx "plan: 마이크로서비스 아키텍처 설계해"
 
-# 실행 없이 계획만
-omx "plan: 결제 시스템 설계하자"
+# 빠른 수정 (토큰 절약)
+omx "eco: API 호출에 에러 핸들링 추가"
+
+# 테스트 주도 개발
+omx "tdd: 비밀번호 검증 구현"
+
+# 보안 리뷰
+omx "review: 인증 모듈 감사해"
 ```
 
-## 스킬 (31개)
+## 모델 & 추론
 
-### 오케스트레이션
-| 스킬 | 설명 |
-|------|------|
-| `team` | 멀티에이전트 단계별 파이프라인 |
-| `autopilot` | 자율 실행 |
-| `ultrawork` | 병렬 실행 |
-| `ultrapilot` | 최대 병렬화 |
-| `ralph` | 지속 모드 |
-| `pipeline` | 순차 처리 |
-| `swarm` | 레거시 멀티에이전트 (→ team) |
+### 자동 모델 선택
 
-### 계획 & 분석
-| 스킬 | 설명 |
-|------|------|
-| `planner` | 인터뷰 기반 계획 |
-| `ralplan` | 반복적 계획 합의 |
-| `analyze` | 코드 품질 분석 |
-| `research` | 심층 연구 |
-| `deepsearch` | 코드베이스 탐색 |
+| 작업 복잡도 | 모델 |
+|-------------|------|
+| 사소함 | gpt-5-nano |
+| 단순 | gpt-5-mini |
+| 표준 | gpt-5.1-codex |
+| 복잡 | gpt-5.2-codex |
+| 장기 실행 | gpt-5.1-codex-max |
 
-### 개발
-| 스킬 | 설명 |
-|------|------|
-| `eco` | 토큰 효율 모드 |
-| `tdd` | 테스트 주도 개발 |
-| `build-fix` | 빌드 에러 수정 |
-| `deepinit` | 프로젝트 초기화 |
-| `release` | 버전 & 체인지로그 |
+### 추론 강도 (Reasoning Effort)
 
-### 품질 & 리뷰
-| 스킬 | 설명 |
-|------|------|
-| `reviewer` | 코드 리뷰 |
-| `code-review` | 종합 리뷰 |
-| `security-review` | 보안 감사 |
-| `ultraqa` | 병렬 테스팅 |
+| 레벨 | 용도 | 자동 매핑 모드 |
+|------|------|----------------|
+| `none` | 빠른 응답 | eco |
+| `low` | 가벼운 작업 | tdd, pipeline |
+| `medium` | 균형 | plan, ultrawork |
+| `high` | 깊은 사고 | autopilot, review |
+| `xhigh` | 최대 (5.2-codex) | ralph, ultrapilot, debug |
 
-### 도구 & 유틸리티
-| 스킬 | 설명 |
-|------|------|
-| `git-master` | Git 워크플로우 |
-| `playwright` | E2E 테스팅 |
-| `debug` | 체계적 디버깅 |
-| `mcp-setup` | MCP 설정 |
-| `configure-notifications` | 알림 설정 |
-
-### 시스템
-| 스킬 | 설명 |
-|------|------|
-| `doctor` | 설치 진단 |
-| `hud` | 실시간 메트릭 |
-| `trace` | 실행 트레이싱 |
-| `learner` | 패턴 추출 |
-| `note` | 세션 노트 |
+```bash
+# 수동 지정
+omx --reasoning xhigh "복잡한 아키텍처 결정"
+omx --model gpt-5.2-codex "중요한 작업"
+```
 
 ## 에이전트 (32개)
 
-### 주요 오케스트레이션
-- **PM** — 마스터 오케스트레이터
-- **Coordinator** — 병렬 실행 관리
-- **Executor** — 작업 실행
-- **Deep Executor** — 복잡한 구현
-
-### 계획 & 분석
-- **Planner** — 실행 가능한 계획 생성
-- **Analyst** — 시스템 분석
-- **Researcher** — 정보 수집
-- **Explorer** — 코드베이스 탐색
-
-### 아키텍처 & 설계
-- **Architect** — 시스템 설계
-- **Designer** — UI/UX 설계
-- **System Designer** — 분산 시스템
+### 오케스트레이션
+| 에이전트 | 모델 | 역할 |
+|----------|------|------|
+| PM | gpt-5.2-codex | 마스터 오케스트레이터, 작업 위임 |
+| Coordinator | gpt-5.2-codex | 병렬 실행 관리 |
+| Executor | gpt-5.1-codex | 작업 실행 |
 
 ### 개발
-- **Frontend** — React, Vue, TypeScript
-- **Backend** — API, 데이터베이스
-- **Fullstack** — 종단간 개발
-- **Mobile** — React Native, Flutter
-- **DevOps** — CI/CD, 인프라
+| 에이전트 | 전문 분야 |
+|----------|-----------|
+| Frontend | React, Vue, TypeScript, CSS |
+| Backend | Node.js, Python, API, DB |
+| Fullstack | 엔드투엔드 개발 |
+| Mobile | React Native, Flutter |
+| DevOps | CI/CD, Docker, K8s |
 
-### 품질 & 테스팅
-- **Tester** — 유닛/통합 테스트
-- **QA** — 품질 보증
-- **Security** — 보안 엔지니어링
-- **Performance** — 성능 최적화
+### 품질
+| 에이전트 | 집중 영역 |
+|----------|-----------|
+| Tester | 유닛, 통합, E2E 테스트 |
+| Reviewer | 코드 리뷰, 베스트 프랙티스 |
+| Security | 취약점, OWASP |
+| Debugger | 체계적 버그 추적 |
 
-### 리뷰 & 비평
-- **Reviewer** — 코드 리뷰
-- **Critic** — 가정 검증
+### 전문가
+| 에이전트 | 도메인 |
+|----------|--------|
+| Architect | 시스템 설계, 패턴 |
+| Researcher | 정보 수집 |
+| Data/ML | 데이터 엔지니어링, ML |
+| Writer | 문서화 |
 
-### 전문 분야
-- **Scientist** — 데이터 사이언스
-- **Data** — 데이터 엔지니어링
-- **ML** — 머신러닝
-- **Writer** — 문서화
-- **Docs** — API 문서
-- **Vision** — 시각적 분석
+## 도구 (9개)
 
-### 지원
-- **Debugger** — 버그 찾기
-- **Refactorer** — 코드 개선
-- **Migrator** — 업그레이드 & 마이그레이션
+에이전트가 사용할 수 있는 도구:
+
+| 도구 | 설명 |
+|------|------|
+| `run_shell` | 터미널 명령 실행 |
+| `read_file` | 파일 내용 읽기 |
+| `write_file` | 파일 생성/덮어쓰기 |
+| `edit_file` | 정확한 텍스트 교체 |
+| `list_directory` | 디렉토리 탐색 |
+| `search_files` | 파일명/내용 검색 |
+| `git_status` | Git 상태 확인 |
+| `git_diff` | 변경사항 보기 |
+| `run_tests` | 테스트 자동 감지 & 실행 |
+
+## 스킬 (31개)
+
+`~/.codex/skills/`에 설치됨:
+
+| 카테고리 | 스킬 |
+|----------|------|
+| 오케스트레이션 | team, autopilot, ultrawork, ultrapilot, ralph, pipeline, swarm |
+| 기획 | planner, ralplan, analyze, research, deepsearch |
+| 개발 | eco, tdd, build-fix, deepinit, release |
+| 품질 | reviewer, code-review, security-review, ultraqa |
+| 유틸리티 | git-master, playwright, debug, mcp-setup, doctor, hud, trace |
 
 ## CLI 레퍼런스
 
 ```bash
-omx "작업 설명"                  # 모드 자동 감지
-omx "autopilot: 작업"           # 명시적 모드
-omx -m ultrawork "작업"         # 모드 강제
-omx --model gpt-4.1 "작업"      # 모델 지정
-omx --list                      # 세션 목록
-omx --resume <id>               # 세션 재개
-omx --status                    # 상태 확인
-omx -v "작업"                   # 상세 출력
+# 기본
+omx "작업"                        # 모드 자동 감지
+omx "autopilot: 작업"             # 명시적 모드
+
+# 옵션
+omx --model gpt-5.2-codex "작업"  # 모델 지정
+omx --reasoning high "작업"       # 추론 레벨
+omx --provider openai "작업"      # API 과금 사용
+omx -v "작업"                     # 상세 출력
+
+# 세션
+omx --list                        # 모든 세션 목록
+omx --resume <session_id>         # 세션 재개
+omx --status                      # 현재 설정 표시
+
+# 설정
+omx-setup                         # 설정 마법사 실행
+omx --set-provider codex          # 빌링 변경
 ```
+
+## 설정
+
+### ~/.codex/config.toml
+
+```toml
+[model]
+default = "gpt-5.1-codex"
+
+[model.routing]
+nano = "gpt-5-nano"
+mini = "gpt-5-mini"
+standard = "gpt-5.1-codex"
+powerful = "gpt-5.2-codex"
+max = "gpt-5.1-codex-max"
+
+[model.reasoning]
+default = "none"
+autopilot = "high"
+ralph = "xhigh"
+eco = "none"
+
+[billing]
+provider = "codex"  # 또는 "openai"
+
+[skills]
+auto_load = true
+```
+
+## 아키텍처
+
+```
+사용자: omx "autopilot: API 만들어"
+              │
+              ▼
+       ┌─────────────┐
+       │ 모드 감지    │ → autopilot
+       │ 모델 라우팅  │ → gpt-5.2-codex
+       │ 추론 레벨   │ → high
+       └──────┬──────┘
+              ▼
+       ┌─────────────┐
+       │ PM 에이전트  │ ← 도구: shell, files, git
+       │ + Handoffs  │ → [Executor, Tester, Reviewer]
+       └──────┬──────┘
+              ▼
+       ┌─────────────┐
+       │ Runner.run  │ ← OpenAI Agents SDK
+       │ 자율 실행    │
+       └──────┬──────┘
+              ▼
+          결과 반환
+```
+
+## 비교
+
+| 기능 | Codex CLI | omx |
+|------|-----------|-----|
+| 단일 에이전트 | ✅ | ✅ |
+| 멀티 에이전트 | ❌ | ✅ 32개 |
+| 병렬 실행 | ❌ | ✅ ultrawork |
+| 자동 모델 라우팅 | ❌ | ✅ |
+| 추론 제어 | 수동 | ✅ 자동 매핑 |
+| 세션 저장 | ❌ | ✅ |
+| 스킬 | ✅ | ✅ 31개 포함 |
 
 ## 크레딧
 
 - [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) — 원본 영감
-- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — 아키텍처 참조
-- [Supabase Agent Skills](https://github.com/supabase/agent-skills) — 스킬 구조
-- [Vercel Research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) — 설계 철학
+- [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) — 멀티 에이전트 프레임워크
+- [Vercel 연구](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) — AGENTS.md 철학
 
 ## 라이선스
 
-MIT
+MIT © [junghwaYang](https://github.com/junghwaYang)
