@@ -44,7 +44,14 @@ pip install oh-my-codex
 omx-setup  # Interactive setup wizard
 ```
 
-### Option 2: From Source
+### Option 2: pip with full orchestration
+
+```bash
+pip install oh-my-codex[full]  # Includes OpenAI Agents SDK
+omx-setup
+```
+
+### Option 3: From Source
 
 ```bash
 git clone https://github.com/junghwaYang/oh-my-codex.git
@@ -52,10 +59,17 @@ cd oh-my-codex
 ./install.sh
 ```
 
+### Option 4: uv (fast)
+
+```bash
+uv pip install oh-my-codex[full]
+omx-setup
+```
+
 ### Requirements
 
 - Python 3.10+
-- [Codex CLI](https://github.com/openai/codex) installed
+- [Codex CLI](https://github.com/openai/codex) installed (`npm i -g @openai/codex`)
 - OpenAI API key or Codex Pro subscription
 
 ## Quick Start
@@ -229,30 +243,28 @@ omx --set-provider codex        # Change billing
 
 ## Configuration
 
-### ~/.codex/config.toml
+### ~/.codex/omx-config.yaml
 
-```toml
-[model]
-default = "gpt-5.1-codex"
+```yaml
+billing:
+  provider: codex  # or "openai"
 
-[model.routing]
-nano = "gpt-5-nano"
-mini = "gpt-5-mini"
-standard = "gpt-5.1-codex"
-powerful = "gpt-5.2-codex"
-max = "gpt-5.1-codex-max"
+model:
+  default: gpt-5.1-codex
+  routing:
+    nano: gpt-5-nano
+    mini: gpt-5-mini
+    standard: gpt-5.1-codex
+    powerful: gpt-5.2-codex
+    max: gpt-5.1-codex-max
+  reasoning:
+    default: none
+    autopilot: high
+    ralph: xhigh
+    eco: none
 
-[model.reasoning]
-default = "none"
-autopilot = "high"
-ralph = "xhigh"
-eco = "none"
-
-[billing]
-provider = "codex"  # or "openai"
-
-[skills]
-auto_load = true
+skills:
+  auto_load: true
 ```
 
 ## Architecture

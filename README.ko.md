@@ -44,7 +44,14 @@ pip install oh-my-codex
 omx-setup  # 대화형 설정 마법사
 ```
 
-### 방법 2: 소스에서
+### 방법 2: pip 전체 설치 (오케스트레이션 포함)
+
+```bash
+pip install oh-my-codex[full]  # OpenAI Agents SDK 포함
+omx-setup
+```
+
+### 방법 3: 소스에서
 
 ```bash
 git clone https://github.com/junghwaYang/oh-my-codex.git
@@ -52,10 +59,17 @@ cd oh-my-codex
 ./install.sh
 ```
 
+### 방법 4: uv (빠름)
+
+```bash
+uv pip install oh-my-codex[full]
+omx-setup
+```
+
 ### 필수 요건
 
 - Python 3.10+
-- [Codex CLI](https://github.com/openai/codex) 설치됨
+- [Codex CLI](https://github.com/openai/codex) 설치됨 (`npm i -g @openai/codex`)
 - OpenAI API 키 또는 Codex Pro 구독
 
 ## 빠른 시작
@@ -229,30 +243,28 @@ omx --set-provider codex          # 빌링 변경
 
 ## 설정
 
-### ~/.codex/config.toml
+### ~/.codex/omx-config.yaml
 
-```toml
-[model]
-default = "gpt-5.1-codex"
+```yaml
+billing:
+  provider: codex  # 또는 "openai"
 
-[model.routing]
-nano = "gpt-5-nano"
-mini = "gpt-5-mini"
-standard = "gpt-5.1-codex"
-powerful = "gpt-5.2-codex"
-max = "gpt-5.1-codex-max"
+model:
+  default: gpt-5.1-codex
+  routing:
+    nano: gpt-5-nano
+    mini: gpt-5-mini
+    standard: gpt-5.1-codex
+    powerful: gpt-5.2-codex
+    max: gpt-5.1-codex-max
+  reasoning:
+    default: none
+    autopilot: high
+    ralph: xhigh
+    eco: none
 
-[model.reasoning]
-default = "none"
-autopilot = "high"
-ralph = "xhigh"
-eco = "none"
-
-[billing]
-provider = "codex"  # 또는 "openai"
-
-[skills]
-auto_load = true
+skills:
+  auto_load: true
 ```
 
 ## 아키텍처
