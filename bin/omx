@@ -175,11 +175,12 @@ def interactive_mode():
 
     HELP_TEXT = f"""
   {CYAN}Mode keywords:{RESET}
-    {ORANGE}autopilot:{RESET}  Full autonomous execution
+    {ORANGE}autopilot:{RESET}  Full autonomous execution {DIM}(default){RESET}
     {ORANGE}ulw:{RESET}        Parallel multi-agent (ultrawork)
     {ORANGE}ralph:{RESET}      Persistent - never gives up
     {ORANGE}plan:{RESET}       Planning only, no execution
     {ORANGE}eco:{RESET}        Token-efficient, fast
+    {ORANGE}direct:{RESET}     Raw Codex CLI (no orchestration)
 
   {CYAN}Commands:{RESET}
     {GREEN}status{RESET}   Show current config
@@ -211,15 +212,18 @@ def interactive_mode():
             print(HELP_TEXT)
         elif cmd == "clear":
             os.system("clear" if os.name == "posix" else "cls")
+        elif cmd.startswith("direct ") or cmd.startswith("direct:"):
+            # Explicit direct mode: bypass orchestration
+            direct_prompt = prompt[7:].strip() if cmd.startswith("direct:") else prompt[7:].strip()
+            run_codex_direct(direct_prompt)
         else:
+            # Default: autopilot orchestration
             detected_mode, clean_prompt = detect_mode(prompt)
-            if detected_mode is None:
-                run_codex_direct(prompt)
-            else:
-                try:
-                    run_orchestrator(clean_prompt, detected_mode)
-                except SystemExit:
-                    pass
+            mode = detected_mode or "autopilot"
+            try:
+                run_orchestrator(clean_prompt if detected_mode else prompt, mode)
+            except SystemExit:
+                pass
         print()
 
 

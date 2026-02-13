@@ -201,14 +201,22 @@ def dispatch_prompt(prompt: str, mode_override: str | None = None,
                     model: str | None = None, provider: str | None = None,
                     reasoning: str | None = None, verbose: bool = False,
                     direct: bool = False) -> None:
-    """Dispatch a prompt to the appropriate handler."""
+    """Dispatch a prompt to the appropriate handler.
+
+    Default behavior: autopilot mode (full orchestration).
+    Use --direct flag to bypass orchestration and run Codex directly.
+    """
     detected_mode, clean_prompt = detect_mode(prompt)
     mode = mode_override or detected_mode
 
-    if direct or mode is None:
+    if direct:
+        # Explicit direct mode: bypass orchestration
         effective_model = model or MODE_MODEL_MAP.get(mode)
         effective_reasoning = reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
         run_codex_direct(prompt, model=effective_model, provider=provider, reasoning=effective_reasoning)
+    elif mode is None:
+        # No keyword detected: default to autopilot
+        run_orchestrator(prompt, "autopilot", verbose)
     elif mode in ORCHESTRATED_MODES:
         run_orchestrator(clean_prompt, mode, verbose)
     else:
@@ -226,9 +234,10 @@ def interactive_mode() -> None:
     HELP_TEXT = f"""
   {C.CYAN}Usage:{C.RESET}
     Just type your task and press Enter.
+    {C.DIM}Default: autopilot mode (full orchestration){C.RESET}
 
   {C.CYAN}Mode keywords:{C.RESET}
-    {C.ORANGE}autopilot:{C.RESET}  Full autonomous execution
+    {C.ORANGE}autopilot:{C.RESET}  Full autonomous execution {C.DIM}(default){C.RESET}
     {C.ORANGE}ulw:{C.RESET}        Parallel multi-agent (ultrawork)
     {C.ORANGE}ralph:{C.RESET}      Persistent - never gives up
     {C.ORANGE}plan:{C.RESET}       Planning only, no execution
@@ -236,6 +245,7 @@ def interactive_mode() -> None:
     {C.ORANGE}tdd:{C.RESET}        Test-driven development
     {C.ORANGE}review:{C.RESET}     Code review
     {C.ORANGE}debug:{C.RESET}      Systematic debugging
+    {C.ORANGE}direct:{C.RESET}     Raw Codex CLI (no orchestration)
 
   {C.CYAN}Commands:{C.RESET}
     {C.GREEN}status{C.RESET}   Show current config & status
@@ -306,7 +316,7 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
     parser.add_argument("-l", "--list", action="store_true", help="List sessions")
     parser.add_argument("-s", "--status", action="store_true", help="Show status")
     parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument("--direct", action="store_true", help="Skip orchestration")
+    parser.add_argument("--direct", action="store_true", help="Run Codex directly (skip orchestration)")
     parser.add_argument("--set-provider", choices=["codex", "openai"], help="Change default billing provider")
 
     args = parser.parse_args()
