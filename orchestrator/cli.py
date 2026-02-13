@@ -22,7 +22,7 @@ from .constants import (
 from .utils import get_billing_provider, set_billing_provider, get_config
 
 # Version
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 # Colors
 class C:
@@ -197,6 +197,86 @@ def show_status() -> None:
     print()
 
 
+def dispatch_prompt(prompt: str, mode_override: str | None = None,
+                    model: str | None = None, provider: str | None = None,
+                    reasoning: str | None = None, verbose: bool = False,
+                    direct: bool = False) -> None:
+    """Dispatch a prompt to the appropriate handler."""
+    detected_mode, clean_prompt = detect_mode(prompt)
+    mode = mode_override or detected_mode
+
+    if direct or mode is None:
+        effective_model = model or MODE_MODEL_MAP.get(mode)
+        effective_reasoning = reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
+        run_codex_direct(prompt, model=effective_model, provider=provider, reasoning=effective_reasoning)
+    elif mode in ORCHESTRATED_MODES:
+        run_orchestrator(clean_prompt, mode, verbose)
+    else:
+        effective_model = model or MODE_MODEL_MAP.get(mode)
+        effective_reasoning = reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
+        run_codex_direct(clean_prompt, model=effective_model, provider=provider, reasoning=effective_reasoning)
+
+
+def interactive_mode() -> None:
+    """Run omx in interactive REPL mode."""
+    print_banner()
+    print(f"    {C.DIM}Type a task to execute. Commands: status, list, help, clear, exit{C.RESET}")
+    print()
+
+    HELP_TEXT = f"""
+  {C.CYAN}Usage:{C.RESET}
+    Just type your task and press Enter.
+
+  {C.CYAN}Mode keywords:{C.RESET}
+    {C.ORANGE}autopilot:{C.RESET}  Full autonomous execution
+    {C.ORANGE}ulw:{C.RESET}        Parallel multi-agent (ultrawork)
+    {C.ORANGE}ralph:{C.RESET}      Persistent - never gives up
+    {C.ORANGE}plan:{C.RESET}       Planning only, no execution
+    {C.ORANGE}eco:{C.RESET}        Token-efficient, fast
+    {C.ORANGE}tdd:{C.RESET}        Test-driven development
+    {C.ORANGE}review:{C.RESET}     Code review
+    {C.ORANGE}debug:{C.RESET}      Systematic debugging
+
+  {C.CYAN}Commands:{C.RESET}
+    {C.GREEN}status{C.RESET}   Show current config & status
+    {C.GREEN}list{C.RESET}     List previous sessions
+    {C.GREEN}help{C.RESET}     Show this help
+    {C.GREEN}clear{C.RESET}    Clear screen
+    {C.GREEN}exit{C.RESET}     Quit omx
+"""
+
+    while True:
+        try:
+            prompt = input(f"  {C.ORANGE}omx>{C.RESET} ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print(f"\n  {C.DIM}Bye!{C.RESET}")
+            break
+
+        if not prompt:
+            continue
+
+        cmd = prompt.lower()
+
+        if cmd in ("exit", "quit", "q"):
+            print(f"  {C.DIM}Bye!{C.RESET}")
+            break
+        elif cmd == "status":
+            show_status()
+        elif cmd == "list":
+            list_sessions()
+        elif cmd == "help":
+            print(HELP_TEXT)
+        elif cmd == "clear":
+            os.system("clear" if os.name == "posix" else "cls")
+            print_banner()
+        else:
+            try:
+                dispatch_prompt(prompt)
+            except SystemExit:
+                pass  # Don't exit REPL on command failure
+        print()
+
+
 def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -204,6 +284,7 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  omx                                    # Interactive mode
   omx "fix the bug"                      # Direct Codex
   omx "autopilot: build REST API"        # Full orchestration
   omx "ulw: refactor utils"              # Parallel execution
@@ -213,12 +294,12 @@ Examples:
 Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
 """,
     )
-    
+
     parser.add_argument("prompt", nargs="*", help="Task prompt")
     parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"])
     parser.add_argument("--model", help="Model override")
     parser.add_argument("--provider", choices=["codex", "openai"], help="Billing provider override")
-    parser.add_argument("--reasoning", choices=["none", "low", "medium", "high", "xhigh"], 
+    parser.add_argument("--reasoning", choices=["none", "low", "medium", "high", "xhigh"],
                        help="Reasoning effort (xhigh for GPT-5.2-codex only)")
     parser.add_argument("-r", "--resume", help="Resume session")
     parser.add_argument("-l", "--list", action="store_true", help="List sessions")
@@ -226,44 +307,37 @@ Keywords: autopilot, ulw (ultrawork), plan, eco, ralph
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("--direct", action="store_true", help="Skip orchestration")
     parser.add_argument("--set-provider", choices=["codex", "openai"], help="Change default billing provider")
-    
+
     args = parser.parse_args()
-    
+
     if args.set_provider:
         set_billing_provider(args.set_provider)
         return
-    
+
     if args.status:
         show_status()
         return
-    
+
     if args.list:
         list_sessions()
         return
-    
+
+    # No arguments → interactive mode
     if not args.prompt and not args.resume:
-        parser.print_help()
+        interactive_mode()
         return
-    
+
     prompt = " ".join(args.prompt) if args.prompt else ""
-    detected_mode, clean_prompt = detect_mode(prompt)
-    mode = args.mode or detected_mode
-    
+
     if args.resume:
+        detected_mode, clean_prompt = detect_mode(prompt)
+        mode = args.mode or detected_mode
         run_orchestrator(clean_prompt, mode or "autopilot", args.verbose, args.resume)
         return
-    
-    if args.direct or mode is None:
-        model = args.model or MODE_MODEL_MAP.get(mode)
-        reasoning = args.reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
-        run_codex_direct(prompt, model=model, provider=args.provider, reasoning=reasoning)
-    elif mode in ORCHESTRATED_MODES:
-        run_orchestrator(clean_prompt, mode, args.verbose)
-    else:
-        # Direct modes with model routing
-        model = args.model or MODE_MODEL_MAP.get(mode)
-        reasoning = args.reasoning or MODE_REASONING_MAP.get(mode, REASONING_NONE)
-        run_codex_direct(clean_prompt, model=model, provider=args.provider, reasoning=reasoning)
+
+    dispatch_prompt(prompt, mode_override=args.mode, model=args.model,
+                    provider=args.provider, reasoning=args.reasoning,
+                    verbose=args.verbose, direct=args.direct)
 
 
 if __name__ == "__main__":

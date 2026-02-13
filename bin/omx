@@ -148,12 +148,88 @@ def show_status():
         print("⚠️ Config: Not found")
 
 
+def interactive_mode():
+    """Run omx in interactive REPL mode."""
+    ORANGE = "\033[38;5;208m"
+    GREEN = "\033[32m"
+    CYAN = "\033[36m"
+    DIM = "\033[2m"
+    RESET = "\033[0m"
+
+    # Banner
+    import getpass
+    user = getpass.getuser()
+    print(f"""{ORANGE}
+    ╔═══╗ ╔╗  ╔╗ ╔═╗╔═╗
+    ║╔═╗║ ║║  ║║ ║║╚╝║║
+    ║║ ║║ ║╚╗╔╝║ ║╔╗╔╗║
+    ║║ ║║ ║╔╗╔╗║ ║║║║║║
+    ║╚═╝║ ║║╚╝║║ ║║║║║║
+    ╚═══╝ ╚╝  ╚╝ ╚╝╚╝╚╝{RESET}
+
+    {DIM}Oh My Codex{RESET} v0.1.3
+    {DIM}/{user}{RESET}
+
+    {DIM}Type a task to execute. Commands: status, list, help, clear, exit{RESET}
+""")
+
+    HELP_TEXT = f"""
+  {CYAN}Mode keywords:{RESET}
+    {ORANGE}autopilot:{RESET}  Full autonomous execution
+    {ORANGE}ulw:{RESET}        Parallel multi-agent (ultrawork)
+    {ORANGE}ralph:{RESET}      Persistent - never gives up
+    {ORANGE}plan:{RESET}       Planning only, no execution
+    {ORANGE}eco:{RESET}        Token-efficient, fast
+
+  {CYAN}Commands:{RESET}
+    {GREEN}status{RESET}   Show current config
+    {GREEN}list{RESET}     List previous sessions
+    {GREEN}help{RESET}     Show this help
+    {GREEN}clear{RESET}    Clear screen
+    {GREEN}exit{RESET}     Quit omx
+"""
+
+    while True:
+        try:
+            prompt = input(f"  {ORANGE}omx>{RESET} ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print(f"\n  {DIM}Bye!{RESET}")
+            break
+
+        if not prompt:
+            continue
+
+        cmd = prompt.lower()
+        if cmd in ("exit", "quit", "q"):
+            print(f"  {DIM}Bye!{RESET}")
+            break
+        elif cmd == "status":
+            show_status()
+        elif cmd == "list":
+            list_sessions()
+        elif cmd == "help":
+            print(HELP_TEXT)
+        elif cmd == "clear":
+            os.system("clear" if os.name == "posix" else "cls")
+        else:
+            detected_mode, clean_prompt = detect_mode(prompt)
+            if detected_mode is None:
+                run_codex_direct(prompt)
+            else:
+                try:
+                    run_orchestrator(clean_prompt, detected_mode)
+                except SystemExit:
+                    pass
+        print()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Oh My Codex - Multi-agent orchestration for Codex CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  omx                                    # Interactive mode
   omx "fix the bug in auth.py"           # Direct Codex
   omx "autopilot: build a REST API"      # Full orchestration
   omx "ulw: refactor all utils"          # Parallel execution
@@ -168,7 +244,7 @@ Keywords:
   ralph:      Persistent autopilot (never give up)
 """,
     )
-    
+
     parser.add_argument("prompt", nargs="*", help="Task prompt")
     parser.add_argument("-m", "--mode", choices=["autopilot", "ultrawork", "plan", "eco"],
                        help="Force execution mode")
@@ -178,43 +254,37 @@ Keywords:
     parser.add_argument("-s", "--status", action="store_true", help="Show status")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
     parser.add_argument("--direct", action="store_true", help="Force direct Codex (no orchestration)")
-    
+
     args = parser.parse_args()
-    
-    # Handle special commands
+
     if args.status:
         show_status()
         return
-    
+
     if args.list:
         list_sessions()
         return
-    
+
+    # No arguments → interactive mode
     if not args.prompt and not args.resume:
-        parser.print_help()
+        interactive_mode()
         return
-    
-    # Join prompt parts
+
     prompt = " ".join(args.prompt) if args.prompt else ""
-    
-    # Detect mode from keywords
-    detected_mode, clean_prompt = detect_mode(prompt)
-    mode = args.mode or detected_mode
-    
-    # If resuming, always use orchestrator
+
     if args.resume:
+        detected_mode, clean_prompt = detect_mode(prompt)
+        mode = args.mode or detected_mode
         run_orchestrator(clean_prompt, mode or "autopilot", args.verbose, args.resume)
         return
-    
-    # Decide: direct Codex or orchestrator
+
+    detected_mode, clean_prompt = detect_mode(prompt)
+    mode = args.mode or detected_mode
+
     if args.direct or mode is None:
-        # No special mode detected, use direct Codex
         model = args.model
-        if mode == "eco":
-            model = model or "gpt-4.1-mini"
         run_codex_direct(prompt, model=model)
     else:
-        # Special mode detected, use orchestrator
         run_orchestrator(clean_prompt, mode, args.verbose)
 
 
