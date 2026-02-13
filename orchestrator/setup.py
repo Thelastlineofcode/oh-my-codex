@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import sys
 import shutil
+import subprocess
 import urllib.request
 import zipfile
 import tempfile
@@ -15,15 +16,70 @@ from pathlib import Path
 REPO_URL = "https://github.com/junghwaYang/oh-my-codex"
 SKILLS_URL = f"{REPO_URL}/archive/refs/heads/main.zip"
 
+# Colors
+class Colors:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    DIM = '\033[2m'
+    RESET = '\033[0m'
+
+
+def c(text: str, color: str) -> str:
+    """Colorize text."""
+    return f"{color}{text}{Colors.RESET}"
+
+
+def print_banner() -> None:
+    """Print the Oh My Codex banner."""
+    banner = f"""
+{c('╔══════════════════════════════════════════════════════════════╗', Colors.CYAN)}
+{c('║', Colors.CYAN)}                                                                {c('║', Colors.CYAN)}
+{c('║', Colors.CYAN)}   {c('⚡ OH MY CODEX', Colors.BOLD + Colors.YELLOW)}                                          {c('║', Colors.CYAN)}
+{c('║', Colors.CYAN)}   {c('Multi-Agent Orchestration for Codex CLI', Colors.DIM)}                 {c('║', Colors.CYAN)}
+{c('║', Colors.CYAN)}                                                                {c('║', Colors.CYAN)}
+{c('╚══════════════════════════════════════════════════════════════╝', Colors.CYAN)}
+"""
+    print(banner)
+
+
+def print_box(title: str, content: list[str], color: str = Colors.BLUE) -> None:
+    """Print a styled box."""
+    width = 60
+    print(f"\n{c('┌' + '─' * (width - 2) + '┐', color)}")
+    print(f"{c('│', color)} {c(title, Colors.BOLD)}{' ' * (width - len(title) - 4)}{c('│', color)}")
+    print(f"{c('├' + '─' * (width - 2) + '┤', color)}")
+    for line in content:
+        padding = width - len(line) - 4
+        print(f"{c('│', color)}  {line}{' ' * padding}{c('│', color)}")
+    print(f"{c('└' + '─' * (width - 2) + '┘', color)}")
+
+
+def print_step(msg: str, status: str = "info") -> None:
+    """Print a setup step with icon."""
+    icons = {
+        "info": c("→", Colors.BLUE),
+        "success": c("✓", Colors.GREEN),
+        "warning": c("!", Colors.YELLOW),
+        "error": c("✗", Colors.RED),
+        "progress": c("◐", Colors.CYAN),
+    }
+    icon = icons.get(status, icons["info"])
+    print(f"  {icon} {msg}")
+
+
+def print_section(title: str) -> None:
+    """Print a section header."""
+    print(f"\n{c('━━━', Colors.DIM)} {c(title, Colors.BOLD + Colors.CYAN)} {c('━' * (50 - len(title)), Colors.DIM)}\n")
+
 
 def get_codex_dir() -> Path:
     """Get the Codex configuration directory."""
     return Path.home() / ".codex"
-
-
-def print_step(msg: str, emoji: str = "→") -> None:
-    """Print a setup step."""
-    print(f"  {emoji} {msg}")
 
 
 def setup_directories() -> None:
@@ -40,20 +96,50 @@ def setup_directories() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
 
+def check_codex_cli() -> bool:
+    """Check if Codex CLI is installed."""
+    return shutil.which("codex") is not None
+
+
+def run_codex_login() -> bool:
+    """Run Codex login."""
+    print_step("Opening Codex login...", "progress")
+    try:
+        result = subprocess.run(
+            ["codex", "login"],
+            timeout=120,
+        )
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print_step("Login timed out", "warning")
+        return False
+    except Exception as e:
+        print_step(f"Login error: {e}", "error")
+        return False
+
+
 def setup_billing() -> str:
     """Interactive billing setup."""
-    print("\n💳 Billing Setup\n")
-    print("  How do you want to use Codex?\n")
-    print("  1) Codex Pro - $200/month subscription (unlimited)")
-    print("  2) OpenAI API - Pay per token (usage-based)\n")
+    print_box("💳 Billing Setup", [
+        "",
+        "How do you want to use Codex?",
+        "",
+        f"  {c('[1]', Colors.GREEN)} Codex Pro - $200/month {c('(unlimited)', Colors.DIM)}",
+        f"  {c('[2]', Colors.YELLOW)} OpenAI API - Pay per token {c('(usage-based)', Colors.DIM)}",
+        "",
+    ])
     
     try:
-        choice = input("  Select [1/2]: ").strip()
+        choice = input(f"\n  {c('Select', Colors.BOLD)} [1/2]: ").strip()
     except (EOFError, KeyboardInterrupt):
+        print()
         choice = "1"
     
     if choice == "2":
+        print_step("Using OpenAI API billing", "success")
         return "openai"
+    
+    print_step("Using Codex Pro subscription", "success")
     return "codex"
 
 
@@ -99,17 +185,17 @@ threshold_tokens = 100000
     if config_path.exists():
         backup = config_path.with_suffix(".toml.bak")
         shutil.copy(config_path, backup)
-        print_step(f"Backed up existing config to {backup.name}")
+        print_step(f"Backed up existing config", "info")
     
     config_path.write_text(config_content)
-    print_step(f"Created config at {config_path}")
+    print_step(f"Created config.toml", "success")
 
 
-def download_skills() -> None:
+def download_skills() -> int:
     """Download and install skills from GitHub."""
     skills_dir = get_codex_dir() / "skills"
     
-    print_step("Downloading skills from GitHub...")
+    print_step("Downloading skills from GitHub...", "progress")
     
     try:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -126,7 +212,6 @@ def download_skills() -> None:
             extracted_dir = Path(tmpdir) / "oh-my-codex-main" / ".codex" / "skills"
             
             if extracted_dir.exists():
-                # Copy each skill
                 count = 0
                 for skill_dir in extracted_dir.iterdir():
                     if skill_dir.is_dir():
@@ -136,72 +221,128 @@ def download_skills() -> None:
                         shutil.copytree(skill_dir, dest)
                         count += 1
                 
-                print_step(f"Installed {count} skills to {skills_dir}", "✅")
+                print_step(f"Installed {count} skills", "success")
+                return count
             else:
-                print_step("Skills directory not found in download", "⚠️")
+                print_step("Skills directory not found", "warning")
+                return 0
                 
     except Exception as e:
-        print_step(f"Failed to download skills: {e}", "❌")
-        print_step("You can manually clone the repo and run install.sh")
+        print_step(f"Failed to download: {e}", "error")
+        return 0
 
 
-def download_agents_md() -> None:
+def download_agents_md() -> bool:
     """Download AGENTS.md template."""
     try:
         url = f"{REPO_URL}/raw/main/AGENTS.md"
         agents_path = get_codex_dir() / "AGENTS.md"
         
         urllib.request.urlretrieve(url, agents_path)
-        print_step(f"Downloaded AGENTS.md to {agents_path}", "✅")
+        print_step("Downloaded AGENTS.md", "success")
+        return True
     except Exception as e:
-        print_step(f"Failed to download AGENTS.md: {e}", "⚠️")
+        print_step(f"Failed: {e}", "warning")
+        return False
 
 
-def check_codex_cli() -> bool:
-    """Check if Codex CLI is installed."""
-    return shutil.which("codex") is not None
+def print_success() -> None:
+    """Print success message."""
+    success_box = f"""
+{c('╔══════════════════════════════════════════════════════════════╗', Colors.GREEN)}
+{c('║', Colors.GREEN)}                                                                {c('║', Colors.GREEN)}
+{c('║', Colors.GREEN)}   {c('✅ Setup Complete!', Colors.BOLD + Colors.GREEN)}                                      {c('║', Colors.GREEN)}
+{c('║', Colors.GREEN)}                                                                {c('║', Colors.GREEN)}
+{c('╚══════════════════════════════════════════════════════════════╝', Colors.GREEN)}
+"""
+    print(success_box)
+    
+    print(f"""
+  {c('Quick Start:', Colors.BOLD)}
+
+    {c('$', Colors.DIM)} omx {c('"autopilot: build a REST API"', Colors.CYAN)}
+    {c('$', Colors.DIM)} omx {c('"ulw: refactor all files"', Colors.CYAN)}
+    {c('$', Colors.DIM)} omx {c('"ralph: fix all failing tests"', Colors.CYAN)}
+    {c('$', Colors.DIM)} omx {c('--status', Colors.YELLOW)}
+
+  {c('Documentation:', Colors.BOLD)} {c('https://github.com/junghwaYang/oh-my-codex', Colors.BLUE)}
+""")
 
 
 def main() -> None:
     """Main setup entry point."""
-    print("\n🚀 Oh My Codex Setup\n")
+    # Clear screen (optional)
+    os.system('clear' if os.name == 'posix' else 'cls')
+    
+    # Banner
+    print_banner()
     
     # Check Codex CLI
+    print_section("Prerequisites")
+    
     if not check_codex_cli():
-        print("⚠️  Codex CLI not found. Install it first:")
-        print("   npm install -g @openai/codex")
-        print("   or: brew install --cask codex\n")
+        print_box("⚠️  Codex CLI Required", [
+            "",
+            "Codex CLI is not installed. Install it first:",
+            "",
+            f"  {c('npm install -g @openai/codex', Colors.CYAN)}",
+            "",
+            "  or",
+            "",
+            f"  {c('brew install --cask codex', Colors.CYAN)}",
+            "",
+        ], Colors.YELLOW)
+        
+        try:
+            cont = input(f"\n  Continue anyway? [y/N]: ").strip().lower()
+            if cont != 'y':
+                print("\n  Run omx-setup again after installing Codex CLI.\n")
+                sys.exit(1)
+        except (EOFError, KeyboardInterrupt):
+            print()
+            sys.exit(1)
+    else:
+        print_step("Codex CLI found", "success")
     
-    # Create directories
-    print("📁 Setting up directories...")
+    # Directories
+    print_section("Setting Up")
+    
     setup_directories()
-    print_step("Created ~/.codex/ structure", "✅")
+    print_step("Created ~/.codex/ directories", "success")
     
-    # Billing setup
+    # Billing
     provider = setup_billing()
     
-    # Create config
-    print("\n⚙️  Setting up configuration...")
+    # Login for Codex Pro
+    if provider == "codex":
+        print_section("Authentication")
+        print_step("Codex Pro requires login", "info")
+        
+        try:
+            do_login = input(f"\n  Login to Codex now? [Y/n]: ").strip().lower()
+            if do_login != 'n':
+                if run_codex_login():
+                    print_step("Login successful", "success")
+                else:
+                    print_step("Login skipped - run 'codex login' later", "warning")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            print_step("Login skipped", "warning")
+    
+    # Config
+    print_section("Configuration")
     setup_config(provider)
     
-    # Download skills
-    print("\n📦 Installing skills...")
-    download_skills()
+    # Skills
+    print_section("Skills")
+    skill_count = download_skills()
     
-    # Download AGENTS.md
-    print("\n📝 Setting up AGENTS.md...")
+    # AGENTS.md
+    print_section("AGENTS.md")
     download_agents_md()
     
     # Done
-    print("\n" + "=" * 50)
-    print("✅ Oh My Codex setup complete!\n")
-    print("Usage:")
-    print('  omx "autopilot: build a REST API"')
-    print('  omx "ulw: refactor all files"')
-    print('  omx "eco: quick fix"')
-    print('  omx --status')
-    print("\nDocs: https://github.com/junghwaYang/oh-my-codex")
-    print()
+    print_success()
 
 
 if __name__ == "__main__":
